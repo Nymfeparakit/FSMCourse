@@ -99,19 +99,18 @@ public class FSM {
     }
 
     //преобразует недетерминированный автомат в детерминированный
-    private void convertToDeterministic() {
+    public void convertToDeterministic() {
 
         HashMap<String, HashMap<String, String>> newSwitches = new HashMap<>();//здесь будут переходы для нового детерминированного автомата
         ArrayList<HashSet<String>> newStatesList = new ArrayList<>();//очередь из новых состояний, которые нужно разобрать
         int indexOfNewStatesList = 0;//индекс чтобы постепенно проходится по элементам
-        //используется отдельно, так как список будет пополняться постепенно
+                                    //используется отдельно, так как список будет пополняться постепенно
         HashSet<String> firstNewState = new HashSet<>();
-        //сюда будут записываться все переходя для
-        HashMap<String, HashSet<String>> switchesForState = new HashMap<>();
         firstNewState.add("q0");//начальное состояние - всегда qo?
         newStatesList.add(firstNewState);
         HashMap<HashSet<String>, String> newStatesNames = new HashMap<>();
-        int statesCounter = 0;//счетчик новых состояний
+        newStatesNames.put(firstNewState, "qo");
+        int statesCounter = 1;//счетчик новых состояний
         int finalStatesCounter = 0;//счетчик новых финальных состояний
         boolean isNewStateHasFinishState = false;//находится ли в новом состоянии финальное
         do {
@@ -122,14 +121,17 @@ public class FSM {
             for (String s : newState) { //проходимся по всем состояниям из нового
                 //если переходы для данного элемента еще не были записаны
                 HashMap<String, HashSet<String>> switchesForS = switches.get(s);//получаем все переходы для данного состояния
+                if (switchesForS == null) { //если для данного состояния нет переходов, пропускаем его
+                    continue;
+                }
                 for (HashMap.Entry<String, HashSet<String>> item : switchesForS.entrySet()) { //Проходимся по всем символам
                     String key = item.getKey();
                     HashSet partOfValue = item.getValue();
                     HashSet<String> partOfValue2;
                     if ((partOfValue2 = newStateSwitches.get(key)) != null) { //объединяем с теми состояниями, которые уже записаны
                         partOfValue.addAll(partOfValue2);
-                        newStateSwitches.put(key, partOfValue);
                     }
+                    newStateSwitches.put(key, partOfValue);
                 }
 
             }
@@ -151,6 +153,11 @@ public class FSM {
                     }
                     //определяем для него новое имя и запоминаем его
                     newStatesNames.put(value, createNameForNewState(isNewStateHasFinishState, statesCounter, finalStatesCounter));
+                    if (isNewStateHasFinishState) {
+                        ++finalStatesCounter;
+                    } else {
+                        ++statesCounter;
+                    }
                 }
                 newStateSwitches2.put(item.getKey(), newStatesNames.get(value));//записываем с новым именем
             }
@@ -159,6 +166,8 @@ public class FSM {
         } while (indexOfNewStatesList < newStatesList.size()); //Пока есть неразобранные состояния
 
     }
+
+    
 
     //statesCounter, finalStatesCounter используются, чтобы определить какой номер состоянию задать
     private String createNameForNewState(boolean isNewStateHasFinishState, int statesCounter, int finalStatesCounter) {

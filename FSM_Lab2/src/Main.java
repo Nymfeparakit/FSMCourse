@@ -11,7 +11,8 @@ public class Main {
             System.out.println("File: ");
             String fileName = in.nextLine();
             System.out.println("");
-            fsm.createFSMFromFile("test.txt");
+            fsm.createFSMFromFile("var3_nd.txt");
+            fsm.convertToDeterministic();
         }
 
     }
