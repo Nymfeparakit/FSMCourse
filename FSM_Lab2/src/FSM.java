@@ -31,28 +31,40 @@ public class FSM {
             FileReader fileReader = new FileReader(file);
             BufferedReader reader = new BufferedReader(fileReader);
             String line;
+            if (file.length() == 0) {
+                System.err.println("Файл не может быть пустым!");
+                switches = null;
+                return;
+            }
             while ((line = reader.readLine()) != null) {
                 if (line.isEmpty()) //пропускаем пустые строки
                     continue;
                 //сначала проверяем строку на соответствие шаблону
                 int errorPos;
                 if ((errorPos = checkIfSwitchLineIsCorrect(line)) < line.length()) {
-                    System.out.print("Line is not correct: ");
+                    System.out.print("Строка не верна: ");
                     System.out.println(line);//печатаем неверную строку
                     //System.out.println((char)27 + "[33mYELLOW"); escape sequence для цветв
                     return;
                 }
                 addSwitch(line);
             }
+            //проверяем на наличие начального состояния q0
+            if (!switches.containsKey("q0")) {
+                System.err.println("Отсутствует начальное состояние qo!");
+                switches = null;
+                return;
+            }
             printSwitches();
             System.out.println("");
-            System.out.println("Deterministic: " + isDeterministic);
+            System.out.println("Детерминированный автомат: " + isDeterministic);
             System.out.println("");
             if (!isDeterministic) { //делаем автомат детерминированным
                 convertToDeterministic();
             } else {
                 fillDetSwitches();
             }
+            System.out.println("Таблица переходов:");
             printSwitchesTable();//печатаем таблицу переходов
 
         } catch (IOException ex) {
@@ -63,6 +75,7 @@ public class FSM {
 
     private void fillDetSwitches() {
 
+        if (switches == null) return;
         detSwitches = new HashMap<>();
         for (HashMap.Entry<String, HashMap<String, HashSet<String>>> item : switches.entrySet()) {
             String key = item.getKey();
@@ -149,7 +162,7 @@ public class FSM {
             HashSet<String> newState = newStatesList.get(indexOfNewStatesList);
 
             //сюда запишем переходы для нового состояния
-            HashMap<String, HashSet<String>> newStateSwitches = new HashMap<>();
+            /*HashMap<String, HashSet<String>> newStateSwitches = new HashMap<>();
             for (String s : newState) { //проходимся по всем состояниям из нового
                 //если переходы для данного элемента еще не были записаны
                 HashMap<String, HashSet<String>> switchesForS = switches.get(s);//получаем все переходы для данного состояния
@@ -166,7 +179,10 @@ public class FSM {
                     newStateSwitches.put(key, partOfValue);
                 }
 
-            }
+            }*/
+
+            HashMap<String, HashSet<String>> newStateSwitches = addSwitchesToNewState(newState);
+
             //Сюда будут записаны переходы с уже новыми именами
             HashMap<String, String> newStateSwitches2 = new HashMap<>();
             //Теперь проходимся по всем символам и находим те состояния, которых еще нет в newStateList
@@ -196,12 +212,40 @@ public class FSM {
             detSwitches.put(newStatesNames.get(newState), newStateSwitches2);//дополняем новыми переходами
             ++indexOfNewStatesList;//переходим к следующему элементу
         } while (indexOfNewStatesList < newStatesList.size()); //Пока есть неразобранные состояния
-        printNewStatesNames(newStatesNames);
+        printNewStatesNames(newStatesNames);//печатаем новые имена для состояний
+    }
+
+    private HashMap<String, HashSet<String>> addSwitchesToNewState(HashSet<String> newState) {
+
+        HashMap<String, HashSet<String>> newStateSwitches = new HashMap<>();
+        for (String s : newState) { //проходимся по всем состояниям из нового
+            //если переходы для данного элемента еще не были записаны
+            HashMap<String, HashSet<String>> switchesForS = switches.get(s);//получаем все переходы для данного состояния
+            if (switchesForS == null) { //если для данного состояния нет переходов, пропускаем его
+                continue;
+            }
+            for (HashMap.Entry<String, HashSet<String>> item : switchesForS.entrySet()) { //Проходимся по всем символам
+                String key = item.getKey();
+                HashSet partOfValue = item.getValue();
+                HashSet<String> partOfValue2;
+                if ((partOfValue2 = newStateSwitches.get(key)) != null) { //объединяем с теми состояниями, которые уже записаны
+                    partOfValue.addAll(partOfValue2);
+                }
+                newStateSwitches.put(key, partOfValue);
+            }
+
+        }
+        return newStateSwitches;
+
     }
 
     //разбирает входную строку и делает вывод о ее корректности
     public int parseInput(String line) {
 
+        if (detSwitches == null) {
+            System.err.println("Не заданы переходы для автомата!");
+            return -1;
+        }
         char currSymbol;
         String currState = "q0";
         String path = currState;
