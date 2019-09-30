@@ -1,3 +1,4 @@
+import javax.print.DocFlavor;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -11,12 +12,17 @@ public class FSM {
     //здесь описаны переходы автомата
     //private HashMap<String, HashMap<String, ArrayList<String>>> switches;
     private HashMap<String, HashMap<String, HashSet<String>>> switches;
+    private HashMap<String, HashMap<String, String>> detSwitches;//переходы для детерминированного автомата
+    private HashSet<String> alphabet;//алфавит символов
     private boolean isDeterministic;
+    //используется для вывода таблицы переходов
+    private int numberOfStates = 0;
 
     //читает входной текствый файл и создает из него FSM
     public void createFSMFromFile(String fileName) {
 
         switches = new HashMap<>();
+        alphabet = new HashSet<>();
         isDeterministic = true;
         //читаем файл построчно
         try {
@@ -39,10 +45,35 @@ public class FSM {
                 addSwitch(line);
             }
             printSwitches();
+            System.out.println("");
             System.out.println("Deterministic: " + isDeterministic);
+            System.out.println("");
+            if (!isDeterministic) { //делаем автомат детерминированным
+                convertToDeterministic();
+            } else {
+                fillDetSwitches();
+            }
+            printSwitchesTable();//печатаем таблицу переходов
 
         } catch (IOException ex) {
             System.err.println(ex.getMessage());
+        }
+
+    }
+
+    private void fillDetSwitches() {
+
+        detSwitches = new HashMap<>();
+        for (HashMap.Entry<String, HashMap<String, HashSet<String>>> item : switches.entrySet()) {
+            String key = item.getKey();
+            HashMap<String, HashSet<String>> value = item.getValue();
+            HashMap<String, String> newValue = new HashMap<>();
+            for (HashMap.Entry<String, HashSet<String>> item2 : value.entrySet()) {
+                HashSet<String> hashSet = item2.getValue();
+                Iterator<String> it = hashSet.iterator();
+                newValue.put(item2.getKey(), it.next());
+            }
+            detSwitches.put(key, newValue);
         }
 
     }
@@ -51,7 +82,7 @@ public class FSM {
     //если нет, то возвращает некорректную позицию, где найдено нессответствие
     private int checkIfSwitchLineIsCorrect(String line)
     {
-        Pattern switchLinePat = Pattern.compile("q\\d+,.=[qf]\\d+");//шаблон записи перехода
+        Pattern switchLinePat = Pattern.compile("[qf]\\d+,.=[qf]\\d+");//шаблон записи перехода
         Matcher matcher = switchLinePat.matcher(line);
         for (int i = line.length(); i >= 0; --i) { //находим некорректную позицию
             Matcher region = matcher.region(0, i);
@@ -77,7 +108,7 @@ public class FSM {
         //matcher = symbolPat.matcher(line);
         //matcher.find();
         String symbol = line.substring(posOfSymbol, posOfSymbol + 1);
-
+        alphabet.add(symbol);//добавляем символ в алфавит
         //Заполняем HashMap
         //HashMap<String, ArrayList<String>> switchesForCurrState;//переходы для текущего состояния
         HashMap<String, HashSet<String>> switchesForCurrState;//переходы для текущего состояния
@@ -89,7 +120,8 @@ public class FSM {
         if ((nextStates = switchesForCurrState.get(symbol)) == null) {
             //nextStates = new ArrayList<>();
             nextStates = new HashSet<>();
-        } else { //если уже были переходы для этого же состояния и этого же символа
+                                                    //если уже были переходы для этого же состояния и этого же символа
+        } else if (!nextStates.contains(nextState)){ //но это не тот же переход записанный дважды
             isDeterministic = false;
         }
         nextStates.add(nextState);
@@ -101,7 +133,7 @@ public class FSM {
     //преобразует недетерминированный автомат в детерминированный
     public void convertToDeterministic() {
 
-        HashMap<String, HashMap<String, String>> newSwitches = new HashMap<>();//здесь будут переходы для нового детерминированного автомата
+        detSwitches = new HashMap<>();//здесь будут переходы для нового детерминированного автомата
         ArrayList<HashSet<String>> newStatesList = new ArrayList<>();//очередь из новых состояний, которые нужно разобрать
         int indexOfNewStatesList = 0;//индекс чтобы постепенно проходится по элементам
                                     //используется отдельно, так как список будет пополняться постепенно
@@ -109,7 +141,7 @@ public class FSM {
         firstNewState.add("q0");//начальное состояние - всегда qo?
         newStatesList.add(firstNewState);
         HashMap<HashSet<String>, String> newStatesNames = new HashMap<>();
-        newStatesNames.put(firstNewState, "qo");
+        newStatesNames.put(firstNewState, "q0");
         int statesCounter = 1;//счетчик новых состояний
         int finalStatesCounter = 0;//счетчик новых финальных состояний
         boolean isNewStateHasFinishState = false;//находится ли в новом состоянии финальное
@@ -161,13 +193,35 @@ public class FSM {
                 }
                 newStateSwitches2.put(item.getKey(), newStatesNames.get(value));//записываем с новым именем
             }
-            newSwitches.put(newStatesNames.get(newState), newStateSwitches2);//дополняем новыми переходами
+            detSwitches.put(newStatesNames.get(newState), newStateSwitches2);//дополняем новыми переходами
             ++indexOfNewStatesList;//переходим к следующему элементу
         } while (indexOfNewStatesList < newStatesList.size()); //Пока есть неразобранные состояния
-
+        printNewStatesNames(newStatesNames);
     }
 
-    
+    //разбирает входную строку и делает вывод о ее корректности
+    public int parseInput(String line) {
+
+        char currSymbol;
+        String currState = "q0";
+        String path = currState;
+        for (int i = 0; i < line.length(); ++i) {//Читаем строку посимвольно
+            currSymbol = line.charAt(i);
+            HashMap<String, String> hashMap = detSwitches.get(currState);
+            if (hashMap == null) { //если нет переходов для текущего состояния
+                return i;
+            }
+            currState = detSwitches.get(currState).get(Character.toString(currSymbol));//обновляем состояние
+            if (currState == null)
+                return i;
+            path += " -> " + currState;
+        }
+        System.out.println(path);
+        //после того, как прошлись по всей строке, проверяем, что попали в итоге в финальное состояние
+        if (!currState.contains("f"))
+            return -1;
+        return line.length();
+    }
 
     //statesCounter, finalStatesCounter используются, чтобы определить какой номер состоянию задать
     private String createNameForNewState(boolean isNewStateHasFinishState, int statesCounter, int finalStatesCounter) {
@@ -198,6 +252,48 @@ public class FSM {
         }
     }
 
+    //вывод переходов DFSM в виде таблицы
+    public void printSwitchesTable() {
+        int maxSymbolLength = 0;
+        for (HashMap.Entry<String, HashMap<String, String>> entry : detSwitches.entrySet()) {
+            String key = entry.getKey();
+            if (key.length() > maxSymbolLength) maxSymbolLength = key.length();
+        }
+        Iterator<String> it = alphabet.iterator();
+        String tableHead = "|    ";
+        while (it.hasNext()) { //печатаем шапку
+            String symbol = it.next();
+            tableHead += "| " + symbol + "  ";
+        }
+        tableHead += "|";
+        System.out.println(tableHead);
+        for (HashMap.Entry<String, HashMap<String, String>> entry : detSwitches.entrySet()) {
+            String line = "| " + entry.getKey() + " ";
+            HashMap<String, String> hashMap = entry.getValue();
+            it = alphabet.iterator();
+            while (it.hasNext()) { //печатаем переходы
+                String symbol = it.next();
+                String nextState = hashMap.get(symbol);
+                if (nextState == null) nextState = "  ";
+                line += "| " + nextState + " ";
+            }
+            line += "|";
+            System.out.println(line);
+        }
 
+    }
+
+    private void printNewStatesNames(HashMap<HashSet<String>, String> newStatesNames) {
+        for (HashMap.Entry<HashSet<String>, String> item : newStatesNames.entrySet()) {
+            HashSet<String> hashSet = item.getKey();
+            Iterator<String> it = hashSet.iterator();
+            String line = "{ ";
+            while(it.hasNext()) {
+                line += it.next() + " ";
+            }
+            line += "} -> " + item.getValue();
+            System.out.println(line);
+        }
+    }
 }
 
