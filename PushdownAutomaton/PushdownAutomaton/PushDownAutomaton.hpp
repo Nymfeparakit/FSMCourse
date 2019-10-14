@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <stack>
 #include <vector>
+#include <regex>
 
 //TODO define isNonTerminal isupper
 
@@ -35,7 +36,12 @@ private:
 	void insertSymbolToSets(std::string);
 	void printSet(std::set<char>);
 	void printCommands();
-	void printConfigSequence(std::stack<std::string>, std::stack<std::string>);
+	void printConfigSequence(std::vector<std::string>, std::vector<std::string>);
+	bool checkIfInputLineIsCorrect(std::string);
+	void saveCurrentState(std::vector<std::string>&, 
+		std::vector<std::string>&,
+		std::stack<char>,
+		std::string);
 };
 
 PushDownAutomaton::PushDownAutomaton(std::string fileName)
@@ -45,7 +51,10 @@ PushDownAutomaton::PushDownAutomaton(std::string fileName)
 	bool firstLine = true;
 	while (std::getline(infile, line)) {
 
-		//TODO проверяем строку на соответствие шаблону
+		if (!checkIfInputLineIsCorrect(line)) {
+			std::cout << "Неверная запись в файле" << std::endl;
+			break;
+		}
 
 		char nonTermSymbol = line[0];
 		if (firstLine) {//если это первая строка
@@ -68,6 +77,14 @@ PushDownAutomaton::PushDownAutomaton(std::string fileName)
 			insertSymbolToSets(rule);
 			currRules.insert(rule);//добавляем его в список
 			rightSide.erase(0, posOfDelimeter + 1);
+			posOfDelimeter = rightSide.find('|');
+			if (posOfDelimeter == std::string::npos) {
+				rule = rightSide.substr(0, rightSide.length());
+				std::reverse(rule.begin(), rule.end());//отражаем зеркально
+				insertSymbolToSets(rule);
+				currRules.insert(rule);//добавляем его в список
+				rightSide.erase(0, rightSide.length());
+			}
 			//} while ((posOfDelimeter = rightSide.find('|')) != std::string::npos);
 		} while (rightSide.length() != 0);
 		//составляем команду типа 1
@@ -280,12 +297,6 @@ bool PushDownAutomaton::parseInput(std::string inputStr) {
 
 	std::stack<char> s;//магазин
 	s.push(startSymbol);
-	//запоминает последовательность состояний стека
-	//для последующего вывода последовательности конфигураций
-	std::vector <std::string> statesSequence;
-	statesSequence.push_back(std::string(1, startSymbol));
-	std::vector <std::string> inputStringStatesSequence;
-	inputStringStatesSequence.push_back(inputStr);
 
 	//находим для него все правила
 	auto p = std::make_pair("lambda", startSymbol);
@@ -293,6 +304,12 @@ bool PushDownAutomaton::parseInput(std::string inputStr) {
 	//последовательно запускаем все пути
 	for (auto it = rulesForCurrSymbol.begin(); it != rulesForCurrSymbol.end(); ++it) {
 		std::string rule = *it;
+		//запоминает последовательность состояний стека
+		//для последующего вывода последовательности конфигураций
+		std::vector <std::string> statesSequence;
+		statesSequence.push_back(std::string(1, startSymbol));
+		std::vector <std::string> inputStringStatesSequence;
+		inputStringStatesSequence.push_back(inputStr);
 		//запускаем для каждого ветвления выполнение
 		bool success = process(s, statesSequence, inputStringStatesSequence, rule);
 		if (success) {
@@ -317,9 +334,7 @@ bool PushDownAutomaton::process(std::stack<char> s,
 		currStackState += s2.top();
 		s2.pop();
 	}//сохраняем текущее состояние стека
-	if (currStackState.compare("a+T+T") == 0) {
-		int b = 0;
-	}
+	reverse(currStackState.begin(), currStackState.end());
 	statesSequence.push_back(currStackState);
 	inputStringStatesSequence.push_back(inputStringStatesSequence.back());
 	//чтобы не происходило зацикливание алгоритма
@@ -330,27 +345,11 @@ bool PushDownAutomaton::process(std::stack<char> s,
 
 	char topSymbol = s.top();//теперь берем символ с верха
 	if (isupper(topSymbol)) { //если это нетерминальный символ
-		//находим для него все правила
-		/*auto p = std::make_pair("lambda", topSymbol);
-		std::set<std::string> rulesForCurrSymbol = commands[p];
-		//последовательно запускаем все пути
-		for (auto it = rulesForCurrSymbol.begin(); it != rulesForCurrSymbol.end(); ++it) {
-			std::string currRule = *it;
-			std::vector<std::string> statesSequence2 = statesSequence;
-			std::vector<std::string> inputStringStatesSequence2 = inputStringStatesSequence;
-			if (process(s, statesSequence2, inputStringStatesSequence2, currRule)) {
-				return true;//остальные пути не обрабатываем
-			}
-		}*/
-
 		return processRulesForNonterminalSmbl(topSymbol, statesSequence, inputStringStatesSequence, s);
 	}
 	else { //иначе терминальный символ
 		do {
 			//находим для него правило
-			if (currStackState.compare("a+T+T") == 0) {
-				int b = 0;
-			}
 			std::string inputStr = inputStringStatesSequence.back();
 			char inputSymbol = inputStr[0];
 			auto p = std::make_pair(std::string(1, inputStr[0]), topSymbol);
@@ -361,22 +360,14 @@ bool PushDownAutomaton::process(std::stack<char> s,
 			std::string newInputStr = inputStr.erase(0, 1);//стираем первый элемент
 
 			if (inputStr.empty() && s.empty()) { //здесь заканчивается алгоритм
-				//TODO выводим последовательность
+				printConfigSequence(statesSequence, inputStringStatesSequence);
 				int a = 0;
 				return true;
 			}
 			if (s.empty()) { //если только стек оказался пустым
 				return false;
 			}
-			//TODO вынести в отдельную функцию
-			std::stack<char> s2(s);
-			std::string currStackState = "";
-			while (!s2.empty()) {
-				currStackState += s2.top();
-				s2.pop();
-			}//сохраняем текущее состояние стека
-			statesSequence.push_back(currStackState);
-			inputStringStatesSequence.push_back(newInputStr);
+			saveCurrentState(statesSequence, inputStringStatesSequence, s, newInputStr);
 			topSymbol = s.top();//берем новый верхний элемент
 			//s.pop();
 		} while (!isupper(topSymbol)); 	//пока не встретим снова нетерминальный символ
@@ -384,6 +375,20 @@ bool PushDownAutomaton::process(std::stack<char> s,
 		return processRulesForNonterminalSmbl(topSymbol, statesSequence, inputStringStatesSequence, s);
 	}
 
+}
+
+void PushDownAutomaton::saveCurrentState(std::vector<std::string>& stackStatesSequence,
+	std::vector<std::string>& inputStringStatesSequence, 
+	std::stack<char> s,
+	std::string newInputStr) {
+	std::string currStackState = "";
+	while (!s.empty()) {
+		currStackState += s.top();
+		s.pop();
+	}//сохраняем текущее состояние стека
+	reverse(currStackState.begin(), currStackState.end());
+	stackStatesSequence.push_back(currStackState);
+	inputStringStatesSequence.push_back(newInputStr);
 }
 
 bool PushDownAutomaton::processRulesForNonterminalSmbl(char topSymbol,
@@ -400,22 +405,29 @@ bool PushDownAutomaton::processRulesForNonterminalSmbl(char topSymbol,
 		std::vector<std::string> statesSequence2 = statesSequence;
 		std::vector<std::string> inputStringStatesSequence2 = inputStringStatesSequence;
 		if (process(s, statesSequence2, inputStringStatesSequence2, currRule)) {
-			//TODO выводим цепочку
 			return true;//остальные пути не обрабатываем
 		}
 	}
 	return false;
 }
 
-void PushDownAutomaton::printConfigSequence(std::stack<std::string> stackStatesSequence,
-	std::stack<std::string> inputStringStatesSequence)
+void PushDownAutomaton::printConfigSequence(std::vector<std::string> statesSequence,
+	std::vector<std::string> inputStringStatesSequence)
 {
-	while (!stackStatesSequence.empty()) {
-		std::string stackState = stackStatesSequence.top();
-		stackStatesSequence.pop();
-		std::string inputStrState = inputStringStatesSequence.top();
-		inputStringStatesSequence.pop();
+	//while (!stackStatesSequence.empty()) {
+	for (int i = 0; i < statesSequence.size(); ++i) {
+		std::string stackState = statesSequence.at(i);
+		std::string inputStrState = inputStringStatesSequence.at(i);
 		std::cout << "(s0, " << inputStrState << ", h0" << stackState << ") |-";
 	}
+	std::cout << "(s0, lambda, lambda)" << std::endl;
+
+	//}
+}
+
+bool PushDownAutomaton::checkIfInputLineIsCorrect(std::string line)
+{
+	std::regex r("[A-Z]>.+(\\|.+)*");
+	return std::regex_match(line, r);
 }
 
