@@ -51,6 +51,7 @@ PushDownAutomaton::PushDownAutomaton(std::string fileName)
 	bool firstLine = true;
 	while (std::getline(infile, line)) {
 
+		remove_if(line.begin(), line.end(), isspace);//убираем все пробелы
 		if (!checkIfInputLineIsCorrect(line)) {
 			std::cout << "Неверная запись в файле" << std::endl;
 			break;
