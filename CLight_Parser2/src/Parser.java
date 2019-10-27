@@ -11,6 +11,7 @@ public class Parser {
     private HashMap <Symbol, HashSet<Symbol>> firstSets;
     private HashMap <Symbol, HashSet<Symbol>> followSets;
     private Symbol startSymbol;
+    private HashMap<HashMap<Symbol, Symbol>, ArrayList<Symbol>> predictTable;
 
     public void fillGrammarRules() {
 
@@ -18,7 +19,7 @@ public class Parser {
         grammarSymbols = new HashSet<>();
         try {
 
-            FileInputStream fstream = new FileInputStream("test_grammar.txt");
+            FileInputStream fstream = new FileInputStream("test_grammar_2.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
             String line;
 
@@ -145,7 +146,9 @@ public class Parser {
                     if (!containsNull)
                         break;
                 } else { //если это не первый терминальный символ
-                    tmpFirstSet.clear();
+                    tmpFirstSet.add(smbl);
+                    //continue;
+                    //tmpFirstSet.clear();
                     break;//прерываем цикл, чтобы перейти к след правилу
                 }
             }
@@ -158,6 +161,42 @@ public class Parser {
         }
 
         return firstSet;
+    }
+
+    private HashSet<Symbol> findFirstSetForList(ArrayList<Symbol> list) {
+
+        HashSet<Symbol> tmpFirstSet = new HashSet<>();
+        for (int i = 0; i < list.size(); i++) {
+            //tmpFirstSet = new HashSet<>();
+            Symbol smbl = list.get(i);
+            if (smbl == null || (smbl.isTerminal && i == 0)) {
+                tmpFirstSet.add(smbl);
+                break;
+            } else if (!smbl.isTerminal) {
+                HashSet<Symbol> smblFirstSet;
+                if (firstSets.containsKey(smbl)) {
+                    smblFirstSet = firstSets.get(smbl);
+                } else {
+                    smblFirstSet = findFirst(smbl);
+                }
+                boolean containsNull = false;
+                Iterator<Symbol> it = smblFirstSet.iterator();
+                while (it.hasNext()) {
+                    Symbol s = it.next();
+                    if (s == null) {
+                        containsNull = true;
+                        continue;
+                    }
+                    tmpFirstSet.add(s);
+                }
+                if (!containsNull)
+                    break;
+            } else { //если это не первый терминальный символ
+                tmpFirstSet.add(smbl);
+                break;//прерываем цикл, чтобы перейти к след правилу
+            }
+        }
+        return tmpFirstSet;
     }
 
     public void fillFollowSets() {
@@ -173,7 +212,7 @@ public class Parser {
             HashSet<Symbol> currSymbolSet = findFollow(smbl);
             followSets.put(smbl, currSymbolSet);
         }
-
+        int a = 0;
     }
 
     private HashSet<Symbol> findFollow(Symbol symbol) {
@@ -187,54 +226,112 @@ public class Parser {
             for (ArrayList<Symbol> rule : setOfRules) {
                 boolean leftSymbolFollowSetWasAdded = false;
                 int indexOfSymbol = 0;
-                if ((indexOfSymbol = rule.indexOf(symbol)) == -1) //если правиле нет этого символа
-                    continue;
-                //смотрим на следующий символ
-                if (indexOfSymbol == rule.size() - 1 && !leftSmbl.equals(symbol)) { //если символ стоит последним
-                    HashSet<Symbol> leftSmblFollowSet;
-                    if (followSets.containsKey(leftSmbl)) { //если follow set для этого символа уже вычислялся
-                        leftSmblFollowSet = followSets.get(leftSmbl);
-                    } else { //иначе вычисляем его
-                        leftSmblFollowSet = findFollow(leftSmbl);
-                        followSets.put(leftSmbl, leftSmblFollowSet);//добавляем сразу в список всех follow
-                        //чтобы затем не вычислять еще раз
+                indexOfSymbol = rule.indexOf(symbol);//если правиле нет этого символа
+                while (indexOfSymbol != -1) {
+                    //смотрим на следующий символ
+                    if (indexOfSymbol == rule.size() - 1 && !leftSmbl.equals(symbol)) { //если символ стоит последним
+                        HashSet<Symbol> leftSmblFollowSet;
+                        if (followSets.containsKey(leftSmbl)) { //если follow set для этого символа уже вычислялся
+                            leftSmblFollowSet = followSets.get(leftSmbl);
+                        } else { //иначе вычисляем его
+                            leftSmblFollowSet = findFollow(leftSmbl);
+                            followSets.put(leftSmbl, leftSmblFollowSet);//добавляем сразу в список всех follow
+                            //чтобы затем не вычислять еще раз
+                        }
+                        followSet.addAll(leftSmblFollowSet);
+                        leftSymbolFollowSetWasAdded = true;
+                        break; //переходим к следующему правилу
                     }
-                    followSet.addAll(leftSmblFollowSet);
-                    leftSymbolFollowSetWasAdded = true;
-                    continue; //переходим к следующему правилу
-                }
-                //иначе символ должен быть предпоследним
-                if (indexOfSymbol != rule.size() - 2) continue;
-                Symbol nextSymbol = rule.get(indexOfSymbol + 1);
-                if (nextSymbol.isTerminal) {
-                    followSet.add(nextSymbol);
-                } else {
-                    HashSet<Symbol> firstSet = firstSets.get(nextSymbol);//получаем firstSet для этого символа
-                    for (Symbol smb : firstSet) {
-                        if (smb == null)
-                            continue;
-                        followSet.add(smb);
+                    //смотрим все символы следующие за ним
+                    boolean continuesNull = false;//содержит ли first строки за ним null
+                    for (int i = indexOfSymbol + 1; i < rule.size(); i++) {
+                        Symbol nextSymbol = rule.get(i);
+                        boolean setContinuesNull = false;
+                        if (nextSymbol.isTerminal) {
+                            followSet.add(nextSymbol);
+                            break;
+                        } else {
+                            HashSet<Symbol> firstSet = firstSets.get(nextSymbol);//получаем firstSet для этого символа
+                            for (Symbol smb : firstSet) {
+                                if (smb == null) {
+                                    setContinuesNull = true;
+                                    continue;
+                                }
+                                followSet.add(smb);
+                            }
+                            //если дошли до последнего нетерминала и он содержит epsilon
+                            if (i == rule.size() - 1 && setContinuesNull) {
+                                HashSet<Symbol> leftSmblFollowSet;
+                                if (followSets.containsKey(leftSmbl)) { //если follow set для этого символа уже вычислялся
+                                    leftSmblFollowSet = followSets.get(leftSmbl);
+                                } else { //иначе вычисляем его
+                                    leftSmblFollowSet = findFollow(leftSmbl);
+                                    followSets.put(leftSmbl, leftSmblFollowSet);
+                                }
+                                followSet.addAll(leftSmblFollowSet);
+                            }
+
+                        }
+                        if (!setContinuesNull) break;//далее не идем
                     }
+                    /*if (indexOfSymbol + 1 == rule.size() - 1 //если следующий символ последний
+                            && firstSets.get(nextSymbol).contains(null)
+                            && !leftSymbolFollowSetWasAdded
+                            && !leftSmbl.equals(symbol)) { //и он содержит null
+                        HashSet<Symbol> leftSmblFollowSet;
+                        if (followSets.containsKey(leftSmbl)) { //если follow set для этого символа уже вычислялся
+                            leftSmblFollowSet = followSets.get(leftSmbl);
+                        } else { //иначе вычисляем его
+                            leftSmblFollowSet = findFollow(leftSmbl);
+                            followSets.put(leftSmbl, leftSmblFollowSet);
+                        }
+                        followSet.addAll(leftSmblFollowSet);
+                    }*/
+                    indexOfSymbol = rule.subList(indexOfSymbol + 1, rule.size()).indexOf(symbol);
                 }
-                if (indexOfSymbol + 1 == rule.size() - 1 //если следующий символ последний
-                        && firstSets.get(nextSymbol).contains(null)
-                        && !leftSymbolFollowSetWasAdded
-                        && !leftSmbl.equals(symbol)) { //и он содержит null
-                    HashSet<Symbol> leftSmblFollowSet;
-                    if (followSets.containsKey(leftSmbl)) { //если follow set для этого символа уже вычислялся
-                        leftSmblFollowSet = followSets.get(leftSmbl);
-                    } else { //иначе вычисляем его
-                        leftSmblFollowSet = findFollow(leftSmbl);
-                        followSets.put(leftSmbl, leftSmblFollowSet);
-                    }
-                    followSet.addAll(leftSmblFollowSet);
-                }
+
             }
         }
         if (symbol.value.equals('T')) {
             int a = 0;
         }
         return followSet;
+
+    }
+
+    public void fillPredictTable() {
+
+        predictTable = new HashMap<>();
+        //проходимся по всем продукциям
+        for (Map.Entry<Symbol, HashSet<ArrayList<Symbol>>> entry : grammarRules.entrySet()) {
+            HashSet<ArrayList<Symbol>> setOfRules = entry.getValue();
+            Symbol nonTerminal = entry.getKey(); //символ слева
+            HashSet<Symbol> followSet = followSets.get(nonTerminal); //узнаем follow для левого символа
+            for (ArrayList<Symbol> rule : setOfRules) { //проходимся по всем правилам для данного нетерминала
+                HashSet<Symbol> firstSet = findFirstSetForList(rule);//получаем first для правой части
+                Iterator<Symbol> it = firstSet.iterator();
+                while (it.hasNext()) { //проходимся по каждому терминалу
+                    Symbol terminal = it.next();
+                    if (terminal == null) { //если это epsilon
+                        Iterator<Symbol> it2 = followSet.iterator();
+                        while (it.hasNext()) { //проходимся по каждому терминалу из follow
+                            Symbol terminal2 = it2.next();
+                            if (terminal2 == null) {
+                                HashMap<Symbol, Symbol> symbolsPair = new HashMap<>();
+                                symbolsPair.put(nonTerminal, null);
+                                predictTable.put(symbolsPair, rule);
+                            }
+                            HashMap<Symbol, Symbol> symbolsPair = new HashMap<>();
+                            symbolsPair.put(nonTerminal, terminal2);
+                            predictTable.put(symbolsPair, rule);
+                        }
+                    }
+                    HashMap<Symbol, Symbol> symbolsPair = new HashMap<>();
+                    symbolsPair.put(nonTerminal, terminal);
+                    predictTable.put(symbolsPair, rule);
+                }
+            }
+        }
 
     }
 
