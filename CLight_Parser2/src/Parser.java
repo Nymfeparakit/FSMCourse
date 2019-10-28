@@ -456,7 +456,11 @@ public class Parser {
         stack.push(startSymbol);
         //Печатаем таблицу разбора
         Formatter formatter = new Formatter();
-        System.out.println(formatter.format("%20s %20s %20s", "Стек", "Вход", "Примечание"));
+        System.out.println(formatter.format("%-20s %-20s %-20s", "Стек", "Вход", "Примечание"));
+        //печатаем первое состояние
+        formatter = new Formatter();
+        System.out.println(formatter.format("%-20s %-20s %-20s"
+                ,getCurrentStackState(stack), getCurrentLineState(line), ""));
 
         while (!stack.isEmpty()) {
             Symbol stackTopSmbl = stack.peek();//берем символ с вершины стека
@@ -492,7 +496,7 @@ public class Parser {
                         }
                     }
                     //Печатаем новый шаг
-                    System.out.println(formatter.format("%20s %20s %20s"
+                    System.out.println(formatter.format("%-20s %-20s %-20s"
                             ,getCurrentStackState(stack), getCurrentLineState(line), ""));
                 }
 
@@ -503,8 +507,10 @@ public class Parser {
                     //стираем символ из стека и из входной сроки
                     stack.pop();
                     line.remove(0);
+                    //System.out.println();
+                    formatter = new Formatter();
                     //Печатаем новый шаг
-                    System.out.println(formatter.format("%20s %20s %20s"
+                    System.out.println(formatter.format("%-20s %-20s %-20s"
                             ,getCurrentStackState(stack), getCurrentLineState(line), ""));
                 }
             }
@@ -515,15 +521,19 @@ public class Parser {
 
     private String getCurrentStackState(Stack<Symbol> stack) {
 
+        //версия стека для вывода в консоль
+        Stack<Symbol> reverseStackCopy = new Stack<>();
         Stack<Symbol> stackCopy = (Stack<Symbol>) stack.clone();
+        while (!stackCopy.isEmpty()) {
+            reverseStackCopy.push(stackCopy.pop());
+        }
         String stackState = "";
         StringBuilder strBuilder = new StringBuilder();
-        while (!stackCopy.isEmpty()) {
-            strBuilder.append(stackCopy.pop().toString());
+        strBuilder.append("$");
+        while (!reverseStackCopy.isEmpty()) {
+            strBuilder.append(reverseStackCopy.pop().toString());
             //stackState += stackCopy.pop().toString();
         }
-        strBuilder.append("$");
-        strBuilder = strBuilder.reverse();
         return strBuilder.toString();
     }
 

@@ -1,3 +1,6 @@
+http://hackingoff.com/compilers/predict-first-follow-set
+http://jsmachines.sourceforge.net/machines/ll1.html
+
 S -> A C B | C b b | B a
 A -> d a | B C 
 B -> g | EPSILON
