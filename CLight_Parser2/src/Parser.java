@@ -12,6 +12,7 @@ public class Parser {
     private HashMap <Symbol, HashSet<Symbol>> followSets;
     private Symbol startSymbol;
     private HashMap<HashMap<Symbol, Symbol>, ArrayList<Symbol>> predictTable;
+    private HashMap<HashMap<Symbol, Symbol>, HashSet<Rule>> predictTable2;
 
     public void fillGrammarRules() {
 
@@ -19,7 +20,7 @@ public class Parser {
         grammarSymbols = new HashSet<>();
         try {
 
-            FileInputStream fstream = new FileInputStream("test_grammar_2.txt");
+            FileInputStream fstream = new FileInputStream("test_grammar.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
             String line;
 
@@ -166,7 +167,8 @@ public class Parser {
     private HashSet<Symbol> findFirstSetForList(ArrayList<Symbol> list) {
 
         HashSet<Symbol> tmpFirstSet = new HashSet<>();
-        for (int i = 0; i < list.size(); i++) {
+        int i = 0;
+        for (i = 0; i < list.size(); i++) {
             //tmpFirstSet = new HashSet<>();
             Symbol smbl = list.get(i);
             if (smbl == null || (smbl.isTerminal && i == 0)) {
@@ -195,6 +197,10 @@ public class Parser {
                 tmpFirstSet.add(smbl);
                 break;//прерываем цикл, чтобы перейти к след правилу
             }
+        }
+        //если при этом прошли все нетерминальные символы
+        if (i == list.size() && !list.get(list.size() - 1).isTerminal) {
+            tmpFirstSet.add(null);
         }
         return tmpFirstSet;
     }
@@ -301,7 +307,8 @@ public class Parser {
 
     public void fillPredictTable() {
 
-        predictTable = new HashMap<>();
+        //predictTable = new HashMap<>();
+        predictTable2 = new HashMap<>();
         //проходимся по всем продукциям
         for (Map.Entry<Symbol, HashSet<ArrayList<Symbol>>> entry : grammarRules.entrySet()) {
             HashSet<ArrayList<Symbol>> setOfRules = entry.getValue();
@@ -314,25 +321,219 @@ public class Parser {
                     Symbol terminal = it.next();
                     if (terminal == null) { //если это epsilon
                         Iterator<Symbol> it2 = followSet.iterator();
-                        while (it.hasNext()) { //проходимся по каждому терминалу из follow
+                        while (it2.hasNext()) { //проходимся по каждому терминалу из follow
                             Symbol terminal2 = it2.next();
                             if (terminal2 == null) {
                                 HashMap<Symbol, Symbol> symbolsPair = new HashMap<>();
                                 symbolsPair.put(nonTerminal, null);
-                                predictTable.put(symbolsPair, rule);
+                                Rule rule2 = new Rule(rule);
+                                HashSet<Rule> rules = predictTable2.get(symbolsPair);
+                                if (rules == null) {
+                                    rules = new HashSet<>();
+                                }
+                                rules.add(rule2);
+                                predictTable2.put(symbolsPair, rules);
+                                //predictTable.put(symbolsPair, rule);
+                                //printPredictTableCell(symbolsPair, rule);
+                                continue;
                             }
                             HashMap<Symbol, Symbol> symbolsPair = new HashMap<>();
                             symbolsPair.put(nonTerminal, terminal2);
-                            predictTable.put(symbolsPair, rule);
+                            Rule rule2 = new Rule(rule);
+                            HashSet<Rule> rules = predictTable2.get(symbolsPair);
+                            if (rules == null) {
+                                rules = new HashSet<>();
+                            }
+                            rules.add(rule2);
+                            predictTable2.put(symbolsPair, rules);
+                            //predictTable.put(symbolsPair, rule);
+                            //printPredictTableCell(symbolsPair, rule);
                         }
+                        continue;
                     }
                     HashMap<Symbol, Symbol> symbolsPair = new HashMap<>();
                     symbolsPair.put(nonTerminal, terminal);
-                    predictTable.put(symbolsPair, rule);
+                    Rule rule2 = new Rule(rule);
+                    HashSet<Rule> rules = predictTable2.get(symbolsPair);
+                    if (rules == null) {
+                        rules = new HashSet<>();
+                    }
+                    rules.add(rule2);
+                    predictTable2.put(symbolsPair, rules);
+                   // predictTable.put(symbolsPair, rule);
                 }
             }
         }
 
+    }
+
+    public void printPredictTableCell(HashMap<Symbol, Symbol> indexes, ArrayList<Symbol> rule) {
+
+        for (Map.Entry<Symbol, Symbol> entry2 : indexes.entrySet()) {
+            System.out.print("[" + entry2.getKey() + ", " + entry2.getValue() + "]\t");
+        }
+        for (Symbol smbl : rule) {
+            System.out.print(smbl);
+        }
+        System.out.println("");
+
+    }
+
+    public void printFirstSets()  {
+
+        System.out.println("First sets: ");
+        for (Map.Entry<Symbol, HashSet<Symbol>> entry : firstSets.entrySet()) {
+            Symbol key = entry.getKey();
+            HashSet value = entry.getValue();
+            System.out.print(key + ":\t");
+            Iterator<Symbol> it = value.iterator();
+            while (it.hasNext()) {
+                Symbol smbl = it.next();
+                System.out.print(smbl + " ");
+            }
+            System.out.print("\n");
+        }
+
+    }
+
+    public void printFollowSets() {
+
+        System.out.println("Follow sets: ");
+        for (Map.Entry<Symbol, HashSet<Symbol>> entry : followSets.entrySet()) {
+            Symbol key = entry.getKey();
+            HashSet value = entry.getValue();
+            System.out.print(key + ":\t");
+            Iterator<Symbol> it = value.iterator();
+            while (it.hasNext()) {
+                Symbol smbl = it.next();
+                System.out.print(smbl + " ");
+            }
+            System.out.print("\n");
+        }
+
+    }
+
+    public void printPredictTable() {
+
+        System.out.println("Predict table: ");
+        //HashMap<HashMap<Symbol, Symbol>, ArrayList<Symbol>> predictTable;
+        for (Map.Entry<HashMap<Symbol, Symbol>, ArrayList<Symbol>> entry : predictTable.entrySet()){
+            HashMap<Symbol, Symbol> indexes = entry.getKey();
+            ArrayList<Symbol> rule = entry.getValue();
+            for (Map.Entry<Symbol, Symbol> entry2 : indexes.entrySet()) {
+                System.out.print("[" + entry2.getKey() + ", " + entry2.getValue() + "]\t");
+            }
+            for (Symbol smbl : rule) {
+                System.out.print(smbl);
+            }
+            System.out.println("");
+        }
+
+    }
+
+    public void printPredictTable2() {
+
+        System.out.println("Predict table2: ");
+        for (Map.Entry<HashMap<Symbol, Symbol>, HashSet<Rule>> entry : predictTable2.entrySet()){
+            HashMap<Symbol, Symbol> indexes = entry.getKey();
+            HashSet<Rule> rules = entry.getValue();
+            for (Map.Entry<Symbol, Symbol> entry2 : indexes.entrySet()) {
+                System.out.print("[" + entry2.getKey() + ", " + entry2.getValue() + "]\t");
+            }
+            Iterator<Rule> it = rules.iterator();
+            while (it.hasNext()) {
+                Rule rule = it.next();
+                System.out.print(rule + "; ");
+            }
+            System.out.println("");
+        }
+
+    }
+
+    public void parse(ArrayList<Symbol> line) {
+
+        Stack<Symbol> stack = new Stack<>();
+        stack.push(startSymbol);
+        //Печатаем таблицу разбора
+        Formatter formatter = new Formatter();
+        System.out.println(formatter.format("%20s %20s %20s", "Стек", "Вход", "Примечание"));
+
+        while (!stack.isEmpty()) {
+            Symbol stackTopSmbl = stack.peek();//берем символ с вершины стека
+            //берем первый символ из строки
+            Symbol lineFirstSymbol;
+            if (line.isEmpty()) {
+                lineFirstSymbol = null;
+            } else {
+                lineFirstSymbol = line.get(0);
+            }
+            //Symbol lineFirstSymbol = new Symbol(String.valueOf(line.charAt(0)), true);
+            if (!stackTopSmbl.isTerminal) { //если он не является терминальным
+                //смотрим в таблицу
+                HashMap<Symbol, Symbol> indexes = new HashMap<>();
+                indexes.put(stackTopSmbl, lineFirstSymbol);//символы являются индексами ячейки таблицы
+                HashSet<Rule> rules = predictTable2.get(indexes);
+                if (rules == null) { //если нет подходящего правила
+                    //Error!
+                } else {
+                    formatter = new Formatter();
+                    Iterator<Rule> it = rules.iterator();
+                    Rule rule = it.next();//пока для каждого индекса только одно правило
+                    stack.pop();
+                    ArrayList<Symbol> symbolsInRule = rule.symbols;//получаем символы правила
+                    //Если в правой части правила только epsilon
+                    if (!(symbolsInRule.size() == 1 && symbolsInRule.get(0) == null)) {
+                        //stack.pop();//Тогда мы просто удаляем верхний символ стека
+                    //} else {
+                        //добавляем их в стек
+                        for (int i = symbolsInRule.size() - 1; i >= 0; --i) {
+                            Symbol smbl = symbolsInRule.get(i);
+                            stack.push(smbl);
+                        }
+                    }
+                    //Печатаем новый шаг
+                    System.out.println(formatter.format("%20s %20s %20s"
+                            ,getCurrentStackState(stack), getCurrentLineState(line), ""));
+                }
+
+            } else { //иначе символ в стеке терминальный
+                if (!stackTopSmbl.equals(lineFirstSymbol)) { //сравниваем верхний символ стека и первый символ строки
+                    //Error
+                } else {
+                    //стираем символ из стека и из входной сроки
+                    stack.pop();
+                    line.remove(0);
+                    //Печатаем новый шаг
+                    System.out.println(formatter.format("%20s %20s %20s"
+                            ,getCurrentStackState(stack), getCurrentLineState(line), ""));
+                }
+            }
+
+        }
+
+    }
+
+    private String getCurrentStackState(Stack<Symbol> stack) {
+
+        Stack<Symbol> stackCopy = (Stack<Symbol>) stack.clone();
+        String stackState = "";
+        StringBuilder strBuilder = new StringBuilder();
+        while (!stackCopy.isEmpty()) {
+            strBuilder.append(stackCopy.pop().toString());
+            //stackState += stackCopy.pop().toString();
+        }
+        strBuilder.append("$");
+        strBuilder = strBuilder.reverse();
+        return strBuilder.toString();
+    }
+
+    private String getCurrentLineState(ArrayList<Symbol> line) {
+        String lineState = "";
+        for (Symbol smbl : line) {
+            lineState += smbl.toString();
+        }
+        lineState += "$";
+        return lineState;
     }
 
 }

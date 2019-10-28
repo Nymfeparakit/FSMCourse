@@ -1,0 +1,10 @@
+S -> A C B | C b b | B a
+A -> d a | B C 
+B -> g | EPSILON
+C -> h  | EPSILON
+
+E-> T E2
+E2-> EPSILON | + T E2
+T->F T2
+T2-> EPSILON |*FT2
+F-> ( E ) | id
