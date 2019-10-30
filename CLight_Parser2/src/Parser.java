@@ -11,7 +11,7 @@ public class Parser {
     private HashMap <Symbol, HashSet<Symbol>> firstSets;
     private HashMap <Symbol, HashSet<Symbol>> followSets;
     private Symbol startSymbol;
-    private HashMap<HashMap<Symbol, Symbol>, ArrayList<Symbol>> predictTable;
+    private HashMap<HashMap<Symbol, Symbol>, Rule> predictTable;
     private HashMap<HashMap<Symbol, Symbol>, HashSet<Rule>> predictTable2;
 
     public void fillGrammarRules() {
@@ -307,7 +307,7 @@ public class Parser {
 
     public void fillPredictTable() {
 
-        //predictTable = new HashMap<>();
+        predictTable = new HashMap<>();
         predictTable2 = new HashMap<>();
         //проходимся по всем продукциям
         for (Map.Entry<Symbol, HashSet<ArrayList<Symbol>>> entry : grammarRules.entrySet()) {
@@ -333,7 +333,7 @@ public class Parser {
                                 }
                                 rules.add(rule2);
                                 predictTable2.put(symbolsPair, rules);
-                                //predictTable.put(symbolsPair, rule);
+                                predictTable.put(symbolsPair, rule2);
                                 //printPredictTableCell(symbolsPair, rule);
                                 continue;
                             }
@@ -346,7 +346,7 @@ public class Parser {
                             }
                             rules.add(rule2);
                             predictTable2.put(symbolsPair, rules);
-                            //predictTable.put(symbolsPair, rule);
+                            predictTable.put(symbolsPair, rule2);
                             //printPredictTableCell(symbolsPair, rule);
                         }
                         continue;
@@ -360,8 +360,35 @@ public class Parser {
                     }
                     rules.add(rule2);
                     predictTable2.put(symbolsPair, rules);
-                   // predictTable.put(symbolsPair, rule);
+                    predictTable.put(symbolsPair, rule2);
                 }
+            }
+        }
+
+        addSynchToPredictTable();//добавляем символы synch
+
+    }
+
+    private void addSynchToPredictTable() {
+
+        //проходимся по всем нетерминалам
+        for (Symbol symbol : grammarSymbols) {
+            if (symbol.isTerminal) continue;
+            HashSet<Symbol> followSet = followSets.get(symbol);//Берем множество follow для текущего символа
+            for (Symbol smblFromFllwSet : followSet) {
+                ArrayList<Symbol> rightPartOfRule = new ArrayList<>();
+                Symbol synchSymbol = new Symbol("Synch");
+                rightPartOfRule.add(synchSymbol);
+                Rule rule = new Rule(rightPartOfRule);
+                HashMap<Symbol, Symbol> index = new HashMap<>();
+                index.put(symbol, smblFromFllwSet);
+                HashSet<Rule> rulesFromTable = predictTable2.get(index);
+                predictTable.putIfAbsent(index, rule);
+                /*if (rulesFromTable == null) {
+                    HashSet<Rule> rules = new HashSet<>();
+                    rules.add(rule);
+                    predictTable2.put(index, rules);
+                }*/
             }
         }
 
@@ -417,16 +444,13 @@ public class Parser {
 
         System.out.println("Predict table: ");
         //HashMap<HashMap<Symbol, Symbol>, ArrayList<Symbol>> predictTable;
-        for (Map.Entry<HashMap<Symbol, Symbol>, ArrayList<Symbol>> entry : predictTable.entrySet()){
+        for (Map.Entry<HashMap<Symbol, Symbol>, Rule> entry : predictTable.entrySet()){
             HashMap<Symbol, Symbol> indexes = entry.getKey();
-            ArrayList<Symbol> rule = entry.getValue();
+            Rule rule = entry.getValue();
             for (Map.Entry<Symbol, Symbol> entry2 : indexes.entrySet()) {
                 System.out.print("[" + entry2.getKey() + ", " + entry2.getValue() + "]\t");
             }
-            for (Symbol smbl : rule) {
-                System.out.print(smbl);
-            }
-            System.out.println("");
+            System.out.println(rule);
         }
 
     }
@@ -459,10 +483,11 @@ public class Parser {
         System.out.println(formatter.format("%-20s %-20s %-20s", "Стек", "Вход", "Примечание"));
         //печатаем первое состояние
         formatter = new Formatter();
-        System.out.println(formatter.format("%-20s %-20s %-20s"
-                ,getCurrentStackState(stack), getCurrentLineState(line), ""));
+        //System.out.println(formatter.format("%-20s %-20s %-20s"
+              //  ,getCurrentStackState(stack), getCurrentLineState(line), ""));
 
         while (!stack.isEmpty()) {
+            String errorMsg = "";
             Symbol stackTopSmbl = stack.peek();//берем символ с вершины стека
             //берем первый символ из строки
             Symbol lineFirstSymbol;
@@ -476,13 +501,36 @@ public class Parser {
                 //смотрим в таблицу
                 HashMap<Symbol, Symbol> indexes = new HashMap<>();
                 indexes.put(stackTopSmbl, lineFirstSymbol);//символы являются индексами ячейки таблицы
-                HashSet<Rule> rules = predictTable2.get(indexes);
-                if (rules == null) { //если нет подходящего правила
-                    //Error!
+                Rule rule = predictTable.get(indexes);
+                //HashSet<Rule> rules = predictTable2.get(indexes);
+                if (rule == null) { //если нет подходящего правила
+                    errorMsg = "Нет правила для [" + stackTopSmbl + ", " + lineFirstSymbol + "]";
+                    //Печатаем шаг
+                    formatter = new Formatter();
+                    System.out.println(formatter.format("%-20s %-20s %-20s"
+                            ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
+                    //просто стираем символ (пропускаем)
+                    line.remove(0);
+                    continue;
+                } else if (rule.symbols.get(0) != null && rule.symbols.get(0).value.equals("Synch")) {
+                    formatter = new Formatter();
+                    if (stack.size() > 1) {
+                        errorMsg = "[" + stackTopSmbl + ", " + lineFirstSymbol + "] = Synch";
+                        System.out.println(formatter.format("%-20s %-20s %-20s"
+                                ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
+                        stack.pop();//снимаем нетерминал для стека
+                    } else { //если в стеке только один нетерминал
+                        errorMsg = "[" + stackTopSmbl + ", " + lineFirstSymbol + "] = Synch, в стеке 1 символ";
+                        System.out.println(formatter.format("%-20s %-20s %-20s"
+                                ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
+                        line.remove(0);//пропускаем символ строки
+                        continue;
+                    }
+                    continue;
                 } else {
                     formatter = new Formatter();
-                    Iterator<Rule> it = rules.iterator();
-                    Rule rule = it.next();//пока для каждого индекса только одно правило
+                    //Iterator<Rule> it = rules.iterator();
+                    //Rule rule = it.next();//пока для каждого индекса только одно правило
                     stack.pop();
                     ArrayList<Symbol> symbolsInRule = rule.symbols;//получаем символы правила
                     //Если в правой части правила только epsilon
@@ -495,25 +543,27 @@ public class Parser {
                             stack.push(smbl);
                         }
                     }
-                    //Печатаем новый шаг
-                    System.out.println(formatter.format("%-20s %-20s %-20s"
-                            ,getCurrentStackState(stack), getCurrentLineState(line), ""));
                 }
 
             } else { //иначе символ в стеке терминальный
                 if (!stackTopSmbl.equals(lineFirstSymbol)) { //сравниваем верхний символ стека и первый символ строки
-                    //Error
+                    errorMsg = "Символы " + stackTopSmbl + " " + lineFirstSymbol + "не совпали";
+                    System.out.println(formatter.format("%-20s %-20s %-20s"
+                            ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
+                    stack.pop();//снимаем терминальный символ со стека
+                    continue;
                 } else {
                     //стираем символ из стека и из входной сроки
                     stack.pop();
                     line.remove(0);
                     //System.out.println();
-                    formatter = new Formatter();
-                    //Печатаем новый шаг
-                    System.out.println(formatter.format("%-20s %-20s %-20s"
-                            ,getCurrentStackState(stack), getCurrentLineState(line), ""));
+
                 }
             }
+            formatter = new Formatter();
+            //Печатаем шаг
+            System.out.println(formatter.format("%-20s %-20s %-20s"
+                    ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
 
         }
 

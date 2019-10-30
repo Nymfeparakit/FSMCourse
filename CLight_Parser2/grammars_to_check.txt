@@ -1,5 +1,6 @@
 http://hackingoff.com/compilers/predict-first-follow-set
-http://jsmachines.sourceforge.net/machines/ll1.html
+http://jsmachines.sourceforge.net/machines/ll1.html - для проверки парсинга строки
+https://habr.com/ru/post/462781/ - пример лексического анализатора
 
 S -> A C B | C b b | B a
 A -> d a | B C 
@@ -9,5 +10,5 @@ C -> h  | EPSILON
 E-> T E2
 E2-> EPSILON | + T E2
 T->F T2
-T2-> EPSILON |*FT2
+T2-> EPSILON  |* F T2
 F-> ( E ) | id

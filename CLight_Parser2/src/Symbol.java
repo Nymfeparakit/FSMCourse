@@ -8,6 +8,11 @@ public class Symbol {
         this.isTerminal = isTerminal;
     }
 
+    public Symbol(String value) {
+        this.isTerminal = true;
+        this.value = value;
+    }
+
     @Override
     public boolean equals(Object o) {
         // self check

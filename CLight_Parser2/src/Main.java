@@ -10,18 +10,14 @@ public class Main {
         parser.fillPredictTable();
         parser.printFirstSets();
         parser.printFollowSets();
-        parser.printPredictTable2();
-
+        //parser.printPredictTable2();
+        parser.printPredictTable();
         ArrayList<String> symbolsInLine = new ArrayList<>();
-        //symbolsInLine.add("-");
-        //symbolsInLine.add("(");
+        symbolsInLine.add(")");
         symbolsInLine.add("id");
         symbolsInLine.add("*");
-        symbolsInLine.add("(");
-        symbolsInLine.add("id");
         symbolsInLine.add("+");
         symbolsInLine.add("id");
-        symbolsInLine.add(")");
         ArrayList<Symbol> line = new ArrayList<>();
         for (String str : symbolsInLine) {
             Symbol s = new Symbol(str, true);
@@ -37,3 +33,11 @@ public class Main {
         symbolsInLine.add("id");
         symbolsInLine.add("*");
         symbolsInLine.add("id");*/
+
+/*symbolsInLine.add("id");
+        symbolsInLine.add("*");
+        symbolsInLine.add("(");
+        symbolsInLine.add("id");
+        symbolsInLine.add("+");
+        symbolsInLine.add("id");
+        symbolsInLine.add(")");*/
