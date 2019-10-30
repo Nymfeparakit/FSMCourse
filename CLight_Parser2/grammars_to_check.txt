@@ -1,14 +1,49 @@
-http://hackingoff.com/compilers/predict-first-follow-set
-http://jsmachines.sourceforge.net/machines/ll1.html - для проверки парсинга строки
-https://habr.com/ru/post/462781/ - пример лексического анализатора
+http ->//hackingoff.com/compilers/predict-first-follow-set
+http ->//jsmachines.sourceforge.net/machines/ll1.html - для проверки парсинга строки
+https ->//habr.com/ru/post/462781/ - пример лексического анализатора
 
-S -> A C B | C b b | B a
-A -> d a | B C 
-B -> g | EPSILON
-C -> h  | EPSILON
+S - A C B | C b b | B a
+A - d a | B C 
+B - g | EPSILON
+C - h | EPSILON
 
-E-> T E2
-E2-> EPSILON | + T E2
-T->F T2
-T2-> EPSILON  |* F T2
-F-> ( E ) | id
+E- T E2
+E2- EPSILON | + T E2
+T-F T2
+T2- EPSILON |* F T2
+F- ( E ) | id
+
+program -> type  main  (  )  {  statement  }
+type -> int | bool | void
+statement -> declaration ; | { statement } | for  statement | if   statement | return | EPSILON
+declaration -> type  identifier  assign
+identifier -> character id_end
+character -> a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z | A | B | C | D | E | F | G | H | I | J | K | L | M | N | O | P | Q | R | S | T | U | V | W | X | Y | Z | _
+id_end -> EPSILON | character id_end
+assign -> EPSILON | = assign_end
+assign_end -> identifier | number
+number -> digit number_end
+digit -> 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+number_end -> EPSILON | digit number_end
+for -> for ( declaration ; bool_expression ; )
+bool_expression -> identifier  relop  identifier | number   relop  identifier
+relop -> < | > | == | !=
+if -> if ( bool_expression )
+return -> return number ;
+
+statement -> declaration ; | { statement } | if   statement
+declaration -> type  identifier  assign
+identifier -> character id_end
+type -> int | bool | void
+character -> a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z | A | B 
+id_end -> EPSILON | character id_end
+assign -> EPSILON | = assign_end
+assign_end -> identifier | number
+number -> digit number_end
+digit -> 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9
+number_end -> EPSILON | digit number_end
+bool_expression -> identifier  relop  identifier | number   relop  identifier
+relop -> < | > | == | !=
+if -> if ( bool_expression )
+
+

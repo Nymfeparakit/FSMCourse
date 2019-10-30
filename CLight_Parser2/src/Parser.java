@@ -20,7 +20,7 @@ public class Parser {
         grammarSymbols = new HashSet<>();
         try {
 
-            FileInputStream fstream = new FileInputStream("test_grammar.txt");
+            FileInputStream fstream = new FileInputStream("grammar.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
             String line;
 
@@ -293,7 +293,10 @@ public class Parser {
                         }
                         followSet.addAll(leftSmblFollowSet);
                     }*/
-                    indexOfSymbol = rule.subList(indexOfSymbol + 1, rule.size()).indexOf(symbol);
+                    int prevIndexOfSymbol = indexOfSymbol;
+                    indexOfSymbol = rule.subList(prevIndexOfSymbol + 1, rule.size()).indexOf(symbol);
+                    if (indexOfSymbol != -1) indexOfSymbol += prevIndexOfSymbol + 1;
+                    //indexOfSymbol = rule.indexOf(symbol, indexOfSymbol + 1);
                 }
 
             }
@@ -411,8 +414,9 @@ public class Parser {
         System.out.println("First sets: ");
         for (Map.Entry<Symbol, HashSet<Symbol>> entry : firstSets.entrySet()) {
             Symbol key = entry.getKey();
+            if (key.isTerminal) continue;//не печатаем для терминальных символов
             HashSet value = entry.getValue();
-            System.out.print(key + ":\t");
+            System.out.print(key + ": ");
             Iterator<Symbol> it = value.iterator();
             while (it.hasNext()) {
                 Symbol smbl = it.next();
@@ -474,7 +478,10 @@ public class Parser {
 
     }
 
-    public void parse(ArrayList<Symbol> line) {
+    public void parse(ArrayList<Symbol> line, String fileName) {
+
+        Tokenizer tokenizer = new Tokenizer();//tokenizer будет подавать токены для обработки
+        tokenizer.openFileToRead(fileName);//читает первую строку
 
         Stack<Symbol> stack = new Stack<>();
         stack.push(startSymbol);
@@ -486,15 +493,20 @@ public class Parser {
         //System.out.println(formatter.format("%-20s %-20s %-20s"
               //  ,getCurrentStackState(stack), getCurrentLineState(line), ""));
 
+        boolean moveToNextToken = true;
+        Symbol lineFirstSymbol = null;
         while (!stack.isEmpty()) {
             String errorMsg = "";
             Symbol stackTopSmbl = stack.peek();//берем символ с вершины стека
             //берем первый символ из строки
-            Symbol lineFirstSymbol;
-            if (line.isEmpty()) {
-                lineFirstSymbol = null;
-            } else {
-                lineFirstSymbol = line.get(0);
+            if (moveToNextToken) { //если нужно перейти к следующему токену
+                String nextToken = tokenizer.getNextToken();
+                if (!nextToken.equals("eof")) {
+                    lineFirstSymbol = new Symbol(nextToken, true);
+                } else {
+                    lineFirstSymbol = null;
+                }
+                moveToNextToken = false;
             }
             //Symbol lineFirstSymbol = new Symbol(String.valueOf(line.charAt(0)), true);
             if (!stackTopSmbl.isTerminal) { //если он не является терминальным
@@ -507,23 +519,27 @@ public class Parser {
                     errorMsg = "Нет правила для [" + stackTopSmbl + ", " + lineFirstSymbol + "]";
                     //Печатаем шаг
                     formatter = new Formatter();
+                    //System.out.println(formatter.format("%-20s %-20s %-20s"
+                      //      ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
                     System.out.println(formatter.format("%-20s %-20s %-20s"
-                            ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
+                                  ,getCurrentStackState(stack), tokenizer.getCurrentLine(), errorMsg));
                     //просто стираем символ (пропускаем)
-                    line.remove(0);
+                    //line.remove(0);
+                    moveToNextToken = true;
                     continue;
                 } else if (rule.symbols.get(0) != null && rule.symbols.get(0).value.equals("Synch")) {
                     formatter = new Formatter();
                     if (stack.size() > 1) {
                         errorMsg = "[" + stackTopSmbl + ", " + lineFirstSymbol + "] = Synch";
                         System.out.println(formatter.format("%-20s %-20s %-20s"
-                                ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
+                                ,getCurrentStackState(stack), tokenizer.getCurrentLine(), errorMsg));
                         stack.pop();//снимаем нетерминал для стека
                     } else { //если в стеке только один нетерминал
                         errorMsg = "[" + stackTopSmbl + ", " + lineFirstSymbol + "] = Synch, в стеке 1 символ";
                         System.out.println(formatter.format("%-20s %-20s %-20s"
-                                ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
-                        line.remove(0);//пропускаем символ строки
+                                ,getCurrentStackState(stack), tokenizer.getCurrentLine(), errorMsg));
+                        //line.remove(0);//пропускаем символ строки
+                        moveToNextToken = true;
                         continue;
                     }
                     continue;
@@ -549,13 +565,14 @@ public class Parser {
                 if (!stackTopSmbl.equals(lineFirstSymbol)) { //сравниваем верхний символ стека и первый символ строки
                     errorMsg = "Символы " + stackTopSmbl + " " + lineFirstSymbol + "не совпали";
                     System.out.println(formatter.format("%-20s %-20s %-20s"
-                            ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
+                            ,getCurrentStackState(stack), tokenizer.getCurrentLine(), errorMsg));
                     stack.pop();//снимаем терминальный символ со стека
                     continue;
                 } else {
                     //стираем символ из стека и из входной сроки
                     stack.pop();
-                    line.remove(0);
+                    //line.remove(0);
+                    moveToNextToken = true;
                     //System.out.println();
 
                 }
@@ -563,7 +580,7 @@ public class Parser {
             formatter = new Formatter();
             //Печатаем шаг
             System.out.println(formatter.format("%-20s %-20s %-20s"
-                    ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
+                    ,getCurrentStackState(stack), tokenizer.getCurrentLine(), errorMsg));
 
         }
 

@@ -1,0 +1,31 @@
+Program ->  Type   main   (   )   bracket1   Statement   bracket2.
+Type ->  int
+ | bool
+ | void.
+Statement ->  
+  | Declaration ;
+  | bracket1 Statement bracket2
+  | For   Statement
+  | If      Statement
+  | Return.
+Declaration ->  Type   IdentIfier   Assign.
+IdentIfier ->  Character Id_end.
+Character ->  a | b | c | d | e | f | g | h | i | j | k | l | m | n | o | p | q | r | s | t | u | v | w | x | y | z. 
+Id_end -> 
+| Character Id_end.
+Assign -> 
+  | assign Assign_end.
+Assign_end ->  IdentIfier
+  | Number.
+Number ->  Digit Number_end.
+Digit ->  0 | 1 | 2 | 3 | 4 |  5 | 6 | 7 | 8 | 9.
+Number_end -> 
+  | Digit Number_end.
+For ->  for ( Declaration ; Bool_expression ; ).
+Bool_expression ->  IdentIfier   Relop    IdentIfier
+  | Number      Relop    IdentIfier.
+Relop ->   less | more | equal | not_equal.
+If ->  if ( Bool_expression ).
+Return ->  return Number ;.
+
+http://smlweb.cpsc.ucalgary.ca/start.html
