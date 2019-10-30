@@ -1,0 +1,9 @@
+  int main ( ) {
+	for ( int i = a ; i < c ; ) 
+	{
+		if ( i == b ) 
+		{
+			return 1 ; 
+        	}
+	}
+}

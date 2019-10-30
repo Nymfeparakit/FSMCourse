@@ -12,10 +12,10 @@ public class Rule {
         String str = "";
         for (Symbol smbl : symbols) {
             if (smbl == null) {
-                str += "eps";
+                str += "eps ";
                 continue;
             }
-            str += smbl.toString();
+            str += smbl.toString() + " ";
         }
         return str;
     }

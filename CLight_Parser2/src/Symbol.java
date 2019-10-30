@@ -1,4 +1,5 @@
-public class Symbol {
+
+public class Symbol implements Comparable<Symbol>{
 
     String value;
     boolean isTerminal;
@@ -38,6 +39,10 @@ public class Symbol {
 
     @Override public String toString() {
         return this.value;
+    }
+
+    @Override public int compareTo(Symbol other) {
+        return this.value.compareTo(other.value);
     }
 
 }

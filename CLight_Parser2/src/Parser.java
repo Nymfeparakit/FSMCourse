@@ -1,13 +1,11 @@
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.*;
 
 public class Parser {
 
     private HashMap <Symbol, HashSet<ArrayList<Symbol>>> grammarRules;
-    private HashSet<Symbol> grammarSymbols;
+    public HashSet<Symbol> grammarSymbols;
+    public TreeSet<Symbol> terminalSymbols;
     private HashMap <Symbol, HashSet<Symbol>> firstSets;
     private HashMap <Symbol, HashSet<Symbol>> followSets;
     private Symbol startSymbol;
@@ -18,6 +16,7 @@ public class Parser {
 
         grammarRules = new HashMap<>();
         grammarSymbols = new HashSet<>();
+        terminalSymbols = new TreeSet<>();
         try {
 
             FileInputStream fstream = new FileInputStream("grammar.txt");
@@ -81,6 +80,7 @@ public class Parser {
                             }
                             Symbol smbl = new Symbol(currRule.substring(1, indexOfLastCh), isTerminal);
                             grammarSymbols.add(smbl);
+                            if (isTerminal) terminalSymbols.add(smbl);
                             rule.add(smbl);
                             currRule = currRule.substring(indexOfLastCh + 1);
                         } while (!currRule.isEmpty());
@@ -459,6 +459,26 @@ public class Parser {
 
     }
 
+    public TreeMap<Symbol, Rule> getPredictTableRow(Symbol leftHeaderSymbol) {
+
+        TreeMap<Symbol, Rule> tableRow = new TreeMap<>();
+        Iterator<Symbol> it = terminalSymbols.iterator();
+
+        HashMap<Symbol, Symbol> index = new HashMap<>();
+        while(it.hasNext()) { //проходимся по всем терминалам для данного символа
+            Symbol terminalSmbl = it.next();
+            index.put(leftHeaderSymbol, terminalSmbl);
+            Rule rule = predictTable.get(index);//получаем соответствующее правило
+            tableRow.put(terminalSmbl, rule);//кладем в строку терминал и правило
+        }
+        index = new HashMap<>();
+        index.put(leftHeaderSymbol, null);
+        Rule rule = predictTable.get(index);//получаем соответствующее правило
+        tableRow.put(new Symbol("$"), rule);//кладем в строку терминал и правило
+
+        return tableRow;
+    }
+
     public void printPredictTable2() {
 
         System.out.println("Predict table2: ");
@@ -478,16 +498,23 @@ public class Parser {
 
     }
 
-    public void parse(ArrayList<Symbol> line, String fileName) {
+    public void parse(String fileName) {
 
         Tokenizer tokenizer = new Tokenizer();//tokenizer будет подавать токены для обработки
         tokenizer.openFileToRead(fileName);//читает первую строку
+        StringBuilder tableStrBuilder = new StringBuilder();//для печати таблицы разбора в html
+        tableStrBuilder.append("<table border=\"1\">\n" +
+                "  <tr>\n" +
+                "    <th scope=\"col\">Стек</th>\n" +
+                "    <th scope=\"col\">Вход</th>\n" +
+                "    <th scope=\"col\">Примечание</th>\n" +
+                "  </tr>");
 
         Stack<Symbol> stack = new Stack<>();
         stack.push(startSymbol);
         //Печатаем таблицу разбора
         Formatter formatter = new Formatter();
-        System.out.println(formatter.format("%-20s %-20s %-20s", "Стек", "Вход", "Примечание"));
+        System.out.println(formatter.format("%-30s |%-20s |%-20s", "Стек", "Вход", "Примечание"));
         //печатаем первое состояние
         formatter = new Formatter();
         //System.out.println(formatter.format("%-20s %-20s %-20s"
@@ -495,12 +522,19 @@ public class Parser {
 
         boolean moveToNextToken = true;
         Symbol lineFirstSymbol = null;
+        String currentLine = "";
         while (!stack.isEmpty()) {
             String errorMsg = "";
             Symbol stackTopSmbl = stack.peek();//берем символ с вершины стека
             //берем первый символ из строки
             if (moveToNextToken) { //если нужно перейти к следующему токену
+                boolean moveToNextLine = tokenizer.getCurrentLine().isEmpty();
                 String nextToken = tokenizer.getNextToken();
+                if (moveToNextLine) {
+                    currentLine = tokenizer.getFullLine();
+                } else {
+                    currentLine = tokenizer.getCurrentLine();
+                }
                 if (!nextToken.equals("eof")) {
                     lineFirstSymbol = new Symbol(nextToken, true);
                 } else {
@@ -521,8 +555,9 @@ public class Parser {
                     formatter = new Formatter();
                     //System.out.println(formatter.format("%-20s %-20s %-20s"
                       //      ,getCurrentStackState(stack), getCurrentLineState(line), errorMsg));
-                    System.out.println(formatter.format("%-20s %-20s %-20s"
-                                  ,getCurrentStackState(stack), tokenizer.getCurrentLine(), errorMsg));
+                    System.out.println(formatter.format("%-30s |%-20s |%-20s"
+                                  ,getCurrentStackState(stack), currentLine, errorMsg));
+                    tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
                     //просто стираем символ (пропускаем)
                     //line.remove(0);
                     moveToNextToken = true;
@@ -531,13 +566,14 @@ public class Parser {
                     formatter = new Formatter();
                     if (stack.size() > 1) {
                         errorMsg = "[" + stackTopSmbl + ", " + lineFirstSymbol + "] = Synch";
-                        System.out.println(formatter.format("%-20s %-20s %-20s"
-                                ,getCurrentStackState(stack), tokenizer.getCurrentLine(), errorMsg));
+                        System.out.println(formatter.format("%-30s |%-20s |%-20s"
+                                ,getCurrentStackState(stack), currentLine, errorMsg));
+                        tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
                         stack.pop();//снимаем нетерминал для стека
                     } else { //если в стеке только один нетерминал
                         errorMsg = "[" + stackTopSmbl + ", " + lineFirstSymbol + "] = Synch, в стеке 1 символ";
-                        System.out.println(formatter.format("%-20s %-20s %-20s"
-                                ,getCurrentStackState(stack), tokenizer.getCurrentLine(), errorMsg));
+                        System.out.println(formatter.format("%-30s |%-20s |%-20s"
+                                ,getCurrentStackState(stack), currentLine, errorMsg));
                         //line.remove(0);//пропускаем символ строки
                         moveToNextToken = true;
                         continue;
@@ -564,8 +600,9 @@ public class Parser {
             } else { //иначе символ в стеке терминальный
                 if (!stackTopSmbl.equals(lineFirstSymbol)) { //сравниваем верхний символ стека и первый символ строки
                     errorMsg = "Символы " + stackTopSmbl + " " + lineFirstSymbol + "не совпали";
-                    System.out.println(formatter.format("%-20s %-20s %-20s"
-                            ,getCurrentStackState(stack), tokenizer.getCurrentLine(), errorMsg));
+                    System.out.println(formatter.format("%-30s |%-20s |%-20s"
+                            ,getCurrentStackState(stack), currentLine, errorMsg));
+                    tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
                     stack.pop();//снимаем терминальный символ со стека
                     continue;
                 } else {
@@ -573,14 +610,43 @@ public class Parser {
                     stack.pop();
                     //line.remove(0);
                     moveToNextToken = true;
+                    currentLine = tokenizer.getCurrentLine();
                     //System.out.println();
 
                 }
             }
             formatter = new Formatter();
             //Печатаем шаг
-            System.out.println(formatter.format("%-20s %-20s %-20s"
-                    ,getCurrentStackState(stack), tokenizer.getCurrentLine(), errorMsg));
+            System.out.println(formatter.format("%-30s |%-20s |%-20s"
+                    ,getCurrentStackState(stack), currentLine, errorMsg));
+            tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
+
+        }
+
+        tableStrBuilder.append("</table>");
+        writeParsingTableToFile(tableStrBuilder.toString());
+
+    }
+
+    private StringBuilder addRowToParsingTable(String currentStackState, String currentLine, String errorMsg, StringBuilder tableStrBuilder) {
+
+        tableStrBuilder.append("<tr>\n" +
+                "    <td>" + currentStackState + "</td>\n" +
+                "    <td>" + currentLine + "</td>\n" +
+                "    <td>" + errorMsg + "</td>\n" +
+                "  </tr>");
+
+        return tableStrBuilder;
+
+    }
+
+    private void writeParsingTableToFile(String tableStr) {
+
+        try {
+            FileOutputStream out = new FileOutputStream("parsing_table.html");
+            out.write(tableStr.getBytes());
+            out.close();
+        } catch (IOException e) {
 
         }
 
@@ -596,9 +662,9 @@ public class Parser {
         }
         String stackState = "";
         StringBuilder strBuilder = new StringBuilder();
-        strBuilder.append("$");
+        strBuilder.append("$ ");
         while (!reverseStackCopy.isEmpty()) {
-            strBuilder.append(reverseStackCopy.pop().toString());
+            strBuilder.append(reverseStackCopy.pop().toString() + " ");
             //stackState += stackCopy.pop().toString();
         }
         return strBuilder.toString();
