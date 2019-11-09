@@ -11,6 +11,8 @@ public class Parser {
     private Symbol startSymbol;
     private HashMap<HashMap<Symbol, Symbol>, Rule> predictTable;
     private HashMap<HashMap<Symbol, Symbol>, HashSet<Rule>> predictTable2;
+    public StringBuilder tableStrBuilder;
+    public Stack<Symbol> stack;
 
     public void fillGrammarRules() {
 
@@ -500,9 +502,9 @@ public class Parser {
 
     public void parse(String fileName) {
 
-        Tokenizer tokenizer = new Tokenizer();//tokenizer будет подавать токены для обработки
+        Tokenizer tokenizer = new Tokenizer(this);//tokenizer будет подавать токены для обработки
         tokenizer.openFileToRead(fileName);//читает первую строку
-        StringBuilder tableStrBuilder = new StringBuilder();//для печати таблицы разбора в html
+        tableStrBuilder = new StringBuilder();//для печати таблицы разбора в html
         tableStrBuilder.append("<table border=\"1\">\n" +
                 "  <tr>\n" +
                 "    <th scope=\"col\">Стек</th>\n" +
@@ -510,7 +512,7 @@ public class Parser {
                 "    <th scope=\"col\">Примечание</th>\n" +
                 "  </tr>");
 
-        Stack<Symbol> stack = new Stack<>();
+        stack = new Stack<>();
         stack.push(startSymbol);
         //Печатаем таблицу разбора
         Formatter formatter = new Formatter();
@@ -520,9 +522,18 @@ public class Parser {
         //System.out.println(formatter.format("%-20s %-20s %-20s"
               //  ,getCurrentStackState(stack), getCurrentLineState(line), ""));
 
-        boolean moveToNextToken = true;
-        Symbol lineFirstSymbol = null;
-        String currentLine = "";
+        boolean moveToNextToken = false;
+        //получаем первый токен
+        Symbol lineFirstSymbol = new Symbol(tokenizer.getNextToken(), true);
+        String currentLine = tokenizer.getCurrentLine();
+        //String currentLine = tokenizer.getFullLine();//получаем первую строку
+        //Symbol lineFirstSymbol = null;
+        //String currentLine = "";
+        //печатаем начальное состояние строки и стека
+        tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, "", tableStrBuilder);
+        //System.out.println(formatter.format("%-30s |%-20s |%-20s"
+        //        ,getCurrentStackState(stack), currentLine, ""));
+        currentLine = tokenizer.getCurrentLine();
         while (!stack.isEmpty()) {
             String errorMsg = "";
             Symbol stackTopSmbl = stack.peek();//берем символ с вершины стека
@@ -530,11 +541,11 @@ public class Parser {
             if (moveToNextToken) { //если нужно перейти к следующему токену
                 boolean moveToNextLine = tokenizer.getCurrentLine().isEmpty();
                 String nextToken = tokenizer.getNextToken();
-                if (moveToNextLine) {
-                    currentLine = tokenizer.getFullLine();
-                } else {
-                    currentLine = tokenizer.getCurrentLine();
-                }
+                //if (moveToNextLine) {
+                //    currentLine = tokenizer.getFullLine();
+                //} else {
+                   // currentLine = tokenizer.getCurrentLine();
+                //}
                 if (!nextToken.equals("eof")) {
                     lineFirstSymbol = new Symbol(nextToken, true);
                 } else {
@@ -559,9 +570,10 @@ public class Parser {
                                   ,getCurrentStackState(stack), currentLine, errorMsg));
                     tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
                     //просто стираем символ (пропускаем)
+                    tokenizer.popToken();//TODO что делать, если символ не распознался лексером?
                     //line.remove(0);
                     moveToNextToken = true;
-                    continue;
+                    //continue; //если в подходящей ячейке находится Synch
                 } else if (rule.symbols.get(0) != null && rule.symbols.get(0).value.equals("Synch")) {
                     formatter = new Formatter();
                     if (stack.size() > 1) {
@@ -569,17 +581,22 @@ public class Parser {
                         System.out.println(formatter.format("%-30s |%-20s |%-20s"
                                 ,getCurrentStackState(stack), currentLine, errorMsg));
                         tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
-                        stack.pop();//снимаем нетерминал для стека
+                        stack.pop();//снимаем нетерминал со стека
                     } else { //если в стеке только один нетерминал
+                        //TODO проверить данный случай тоже
                         errorMsg = "[" + stackTopSmbl + ", " + lineFirstSymbol + "] = Synch, в стеке 1 символ";
                         System.out.println(formatter.format("%-30s |%-20s |%-20s"
                                 ,getCurrentStackState(stack), currentLine, errorMsg));
+                        tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
+                        tokenizer.popToken();//TODO что делать, если символ не распознался лексером?
                         //line.remove(0);//пропускаем символ строки
                         moveToNextToken = true;
-                        continue;
                     }
-                    continue;
-                } else {
+                    currentLine = tokenizer.getCurrentLine();
+                    //печатаем новое состояние стека и строки
+                    //tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, "", tableStrBuilder);
+                    //continue;
+                } else { //если подходящее правило нашлось
                     formatter = new Formatter();
                     //Iterator<Rule> it = rules.iterator();
                     //Rule rule = it.next();//пока для каждого индекса только одно правило
@@ -599,28 +616,34 @@ public class Parser {
 
             } else { //иначе символ в стеке терминальный
                 if (!stackTopSmbl.equals(lineFirstSymbol)) { //сравниваем верхний символ стека и первый символ строки
-                    errorMsg = "Символы " + stackTopSmbl + " " + lineFirstSymbol + "не совпали";
+                    errorMsg = "Символы \"" + stackTopSmbl + "\", \"" + lineFirstSymbol + "\" не совпали";
                     System.out.println(formatter.format("%-30s |%-20s |%-20s"
                             ,getCurrentStackState(stack), currentLine, errorMsg));
                     tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
                     stack.pop();//снимаем терминальный символ со стека
-                    continue;
+                    //continue;
                 } else {
                     //стираем символ из стека и из входной сроки
                     stack.pop();
                     //line.remove(0);
                     moveToNextToken = true;
-                    currentLine = tokenizer.getCurrentLine();
+                    //выталкиваем токен из текущей строки
+                    tokenizer.popToken();
+                    //currentLine = tokenizer.getCurrentLine();
                     //System.out.println();
 
                 }
             }
+            currentLine = tokenizer.getCurrentLine();//получаем текущую строку
             formatter = new Formatter();
+            if (tokenizer.getCurrentLine().isEmpty()) //если текущая строка стала пустой
+                currentLine = tokenizer.getNextLine();//читаем следующую строку
             //Печатаем шаг
-            System.out.println(formatter.format("%-30s |%-20s |%-20s"
-                    ,getCurrentStackState(stack), currentLine, errorMsg));
-            tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
-
+            if (currentLine != null) {
+                System.out.println(formatter.format("%-30s |%-20s |%-20s"
+                        ,getCurrentStackState(stack), currentLine, errorMsg));
+                tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, "", tableStrBuilder);
+            }
         }
 
         tableStrBuilder.append("</table>");
@@ -628,7 +651,7 @@ public class Parser {
 
     }
 
-    private StringBuilder addRowToParsingTable(String currentStackState, String currentLine, String errorMsg, StringBuilder tableStrBuilder) {
+    public StringBuilder addRowToParsingTable(String currentStackState, String currentLine, String errorMsg, StringBuilder tableStrBuilder) {
 
         tableStrBuilder.append("<tr>\n" +
                 "    <td>" + currentStackState + "</td>\n" +
@@ -652,7 +675,7 @@ public class Parser {
 
     }
 
-    private String getCurrentStackState(Stack<Symbol> stack) {
+    public String getCurrentStackState(Stack<Symbol> stack) {
 
         //версия стека для вывода в консоль
         Stack<Symbol> reverseStackCopy = new Stack<>();

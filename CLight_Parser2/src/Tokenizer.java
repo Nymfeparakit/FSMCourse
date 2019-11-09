@@ -11,6 +11,12 @@ public class Tokenizer {
     String currentLine = "";//текущая обрабатываемя строка
     boolean currentTokenIsCharOrNmbr = false;
     String fullLine = "";
+    String currentToken = "";
+    Parser parser;
+
+    public Tokenizer(Parser parser) {
+        this.parser = parser;
+    }
 
     public void openFileToRead(String fileName) {
 
@@ -41,8 +47,8 @@ public class Tokenizer {
                     currentLine = currentLine.trim();
                 } else {
                     String nextToken = currentLine.substring(0, 1);//забираем по одному символу
-                    currentLine = currentLine.substring(1);
-                    return nextToken;
+                    //currentLine = currentLine.substring(1);
+                    return (currentToken = nextToken);
                 }
             }
             //пытаемся определить первый токен в строке
@@ -55,18 +61,48 @@ public class Tokenizer {
                     if (type == TokenType.ID || type == TokenType.NUMBER) {
                         currentTokenIsCharOrNmbr = true;
                         nextToken = currentLine.substring(0, 1);//забираем по одному символу
-                        currentLine = currentLine.substring(1);
+                        //currentLine = currentLine.substring(1);
                     } else {
                         nextToken = currentLine.substring(matcher.start(), matcher.end());
-                        currentLine = currentLine.substring(matcher.end()).trim();//стираем обработанную часть строки
+                        //currentLine = currentLine.substring(matcher.end()).trim();//стираем обработанную часть строки
                     }
-                    return nextToken;
+                    return (currentToken = nextToken);
                 }
             }
+            //если дошли до этого места, значит токен не распознался лексером
+            //тогда сообщаем об ошибке
+            StringBuilder tableStrBuilder = parser.addRowToParsingTable(parser.getCurrentStackState(parser.stack), currentLine,
+                    "Невозможно распознать символ", parser.tableStrBuilder);
+            parser.tableStrBuilder = tableStrBuilder;
+            //и обрезаем строку до следующей лексемы
+            //находим пробел
         } catch (IOException e) {
             e.printStackTrace();
         }
         return "";
+
+    }
+
+    public String getNextLine() {
+        try {
+            String line = reader.readLine();
+            if (line == null)
+                return null;
+            return (currentLine = line.trim()); //читаем по строке
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
+    }
+
+    //"выталкивает" из строки первый токен
+    public void popToken() {
+        int length = currentToken.length();
+        if (currentTokenIsCharOrNmbr) { //если сейчас идет число или id, не обрезаем пробелы слева
+            currentLine = currentLine.substring(length); //чтобы словить момент, когда он закончится
+        } else {
+            currentLine = currentLine.substring(length).trim();
+        }
 
     }
 

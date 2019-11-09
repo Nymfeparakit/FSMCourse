@@ -97,9 +97,9 @@ public class Main extends Application {
         Scene scene = new Scene(vBox, 960, 600);
 
         primaryStage.setScene(scene);
-        //primaryStage.show();
 
-        parser.parse("test.txt");
+        //primaryStage.show();
+        parser.parse("test_error.txt");
 
     }
 

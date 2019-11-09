@@ -33,32 +33,28 @@
     <td></td>
   </tr><tr>
     <td>$ } statement </td>
-    <td>+ for ( int i = a ; i < c ; )</td>
-    <td></td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td>+ for ( int i = a ; i < c ; )</td>
-    <td>Нет правила для [statement, ]</td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td>for ( int i = a ; i < c ; )</td>
+    <td>for ) int i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement for </td>
-    <td>for ( int i = a ; i < c ; )</td>
+    <td>for ) int i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; declaration ( for </td>
-    <td>for ( int i = a ; i < c ; )</td>
+    <td>for ) int i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; declaration ( </td>
-    <td>( int i = a ; i < c ; )</td>
+    <td>) int i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
+    <td>$ } statement ) ; bool_expression ; declaration ( </td>
+    <td>) int i = a ; i < c ; )</td>
+    <td>Символы ( )не совпали</td>
+  </tr><tr>
     <td>$ } statement ) ; bool_expression ; declaration </td>
-    <td>int i = a ; i < c ; )</td>
-    <td></td>
+    <td>) int i = a ; i < c ; )</td>
+    <td>Нет правила для [declaration, )]</td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign identifier type </td>
     <td>int i = a ; i < c ; )</td>
