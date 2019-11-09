@@ -1,3 +1,5 @@
+import javafx.scene.text.Text;
+
 import java.io.*;
 import java.util.*;
 
@@ -500,9 +502,9 @@ public class Parser {
 
     }
 
-    public void parse(String fileName) {
+    public void parse(String fileName, TextFlowFiller filler) {
 
-        Tokenizer tokenizer = new Tokenizer(this);//tokenizer будет подавать токены для обработки
+        Tokenizer tokenizer = new Tokenizer(this, filler);//tokenizer будет подавать токены для обработки
         tokenizer.openFileToRead(fileName);//читает первую строку
         tableStrBuilder = new StringBuilder();//для печати таблицы разбора в html
         tableStrBuilder.append("<table border=\"1\">\n" +
@@ -541,6 +543,12 @@ public class Parser {
             if (moveToNextToken) { //если нужно перейти к следующему токену
                 boolean moveToNextLine = tokenizer.getCurrentLine().isEmpty();
                 String nextToken = tokenizer.getNextToken();
+                if (nextToken.equals("#")) {//если лексер не распознал текущий символ
+                    currentLine = tokenizer.getCurrentLine();
+                    //печатаем новое состояние строки
+                    tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
+                    continue;
+                }
                 //if (moveToNextLine) {
                 //    currentLine = tokenizer.getFullLine();
                 //} else {
@@ -569,8 +577,9 @@ public class Parser {
                     System.out.println(formatter.format("%-30s |%-20s |%-20s"
                                   ,getCurrentStackState(stack), currentLine, errorMsg));
                     tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
+                    tokenizer.addMistake("Ожидался \"" + stackTopSmbl + "\"");//запоминаем ошибку
                     //просто стираем символ (пропускаем)
-                    tokenizer.popToken();//TODO что делать, если символ не распознался лексером?
+                    tokenizer.popToken();
                     //line.remove(0);
                     moveToNextToken = true;
                     //continue; //если в подходящей ячейке находится Synch
@@ -581,6 +590,7 @@ public class Parser {
                         System.out.println(formatter.format("%-30s |%-20s |%-20s"
                                 ,getCurrentStackState(stack), currentLine, errorMsg));
                         tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
+                        tokenizer.addMistake(errorMsg);//запоминаем ошибку
                         stack.pop();//снимаем нетерминал со стека
                     } else { //если в стеке только один нетерминал
                         //TODO проверить данный случай тоже
@@ -588,7 +598,8 @@ public class Parser {
                         System.out.println(formatter.format("%-30s |%-20s |%-20s"
                                 ,getCurrentStackState(stack), currentLine, errorMsg));
                         tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
-                        tokenizer.popToken();//TODO что делать, если символ не распознался лексером?
+                        tokenizer.addMistake(errorMsg);//запоминаем ошибку
+                        tokenizer.popToken();
                         //line.remove(0);//пропускаем символ строки
                         moveToNextToken = true;
                     }
@@ -598,8 +609,6 @@ public class Parser {
                     //continue;
                 } else { //если подходящее правило нашлось
                     formatter = new Formatter();
-                    //Iterator<Rule> it = rules.iterator();
-                    //Rule rule = it.next();//пока для каждого индекса только одно правило
                     stack.pop();
                     ArrayList<Symbol> symbolsInRule = rule.symbols;//получаем символы правила
                     //Если в правой части правила только epsilon
@@ -617,15 +626,14 @@ public class Parser {
             } else { //иначе символ в стеке терминальный
                 if (!stackTopSmbl.equals(lineFirstSymbol)) { //сравниваем верхний символ стека и первый символ строки
                     errorMsg = "Символы \"" + stackTopSmbl + "\", \"" + lineFirstSymbol + "\" не совпали";
+                    tokenizer.addMistake("Ожидался \"" + stackTopSmbl + "\"");//запоминаем ошибку
                     System.out.println(formatter.format("%-30s |%-20s |%-20s"
                             ,getCurrentStackState(stack), currentLine, errorMsg));
                     tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
                     stack.pop();//снимаем терминальный символ со стека
-                    //continue;
                 } else {
                     //стираем символ из стека и из входной сроки
                     stack.pop();
-                    //line.remove(0);
                     moveToNextToken = true;
                     //выталкиваем токен из текущей строки
                     tokenizer.popToken();

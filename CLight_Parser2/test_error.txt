@@ -1,5 +1,5 @@
   int main ( ) {
-	+ for ( int i = a ; i < c ; ) 
+	+ for ( int i = a ) ; i < c ; ) 
 	{
 		if ( i == b ) 
 		{

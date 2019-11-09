@@ -1,7 +1,7 @@
 import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,9 +13,13 @@ public class Tokenizer {
     String fullLine = "";
     String currentToken = "";
     Parser parser;
+    int numberOfCurrentLine;
+    int numberOfTokenInLine;
+    TextFlowFiller filler;
 
-    public Tokenizer(Parser parser) {
+    public Tokenizer(Parser parser, TextFlowFiller filler) {
         this.parser = parser;
+        this.filler = filler;
     }
 
     public void openFileToRead(String fileName) {
@@ -23,6 +27,8 @@ public class Tokenizer {
         try {
             FileReader fileReader = new FileReader(fileName);
             reader = new BufferedReader(fileReader);
+            numberOfCurrentLine = 0;//номер текущей строки
+            numberOfTokenInLine = 0;//номер токена в строке
             //currentLine = reader.readLine().trim();
 
         } catch (IOException e) {
@@ -31,12 +37,22 @@ public class Tokenizer {
 
     }
 
+    public void addMistake(String errorMsg) {
+        filler.addMistake(errorMsg, numberOfCurrentLine, numberOfTokenInLine);
+    }
+
     public String getNextToken() {
 
-        try {
+        //try {
             if (currentLine.isEmpty()) {//если в строке больше ничего нет
-                currentLine = reader.readLine().trim(); //читаем по строке
-                fullLine = currentLine;
+                getNextLine();
+                /*
+                currentLine = reader.readLine(); //читаем по строке
+                fullLine = currentLine; //запоминаем строку целиком
+                currentLine = currentLine.trim();
+                ++numberOfCurrentLine;
+                numberOfTokenInLine = 0;//пока еще не прочитали ни одного токена
+                */
             }
             if (currentLine == null) { //если достигнут конец файла
                 return "eof";
@@ -50,10 +66,11 @@ public class Tokenizer {
                     //currentLine = currentLine.substring(1);
                     return (currentToken = nextToken);
                 }
-            }
+            } //TODO проверить, что работает с идентификаторами
+            ++numberOfTokenInLine;//увеличиваем номер токена в строке
             //пытаемся определить первый токен в строке
             for (TokenType type : TokenType.values()) { //последовательное применяем все типы
-                String reg = "^" + type.getReg(); //TODO пропускать пробелы в начале строки
+                String reg = "^" + type.getReg();
                 Pattern pattern = Pattern.compile(reg);
                 Matcher matcher = pattern.matcher(currentLine);
                 if (matcher.find()) { //если совпадение найдено
@@ -70,25 +87,30 @@ public class Tokenizer {
                 }
             }
             //если дошли до этого места, значит токен не распознался лексером
-            //тогда сообщаем об ошибке
+            //тогда пишем об ошибке в таблице
             StringBuilder tableStrBuilder = parser.addRowToParsingTable(parser.getCurrentStackState(parser.stack), currentLine,
                     "Невозможно распознать символ", parser.tableStrBuilder);
             parser.tableStrBuilder = tableStrBuilder;
-            //и обрезаем строку до следующей лексемы
-            //находим пробел
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return "";
+            addMistake("Невозможно распознать символ");//запоминаем ошибку
+
+            int posOfSeparator = currentLine.indexOf(" ");//находим пробел
+            currentLine = currentLine.substring(posOfSeparator).trim();//и обрезаем строку до следующей лексемы
+       // } catch (IOException e) {
+       //     e.printStackTrace();
+       // }
+        return "#";//индикатор неопознанного символа
 
     }
 
     public String getNextLine() {
         try {
-            String line = reader.readLine();
-            if (line == null)
+            currentLine = reader.readLine(); //читаем по строке
+            if (currentLine == null) //если дошли до конца файла
                 return null;
-            return (currentLine = line.trim()); //читаем по строке
+            fullLine = currentLine; //запоминаем строку целиком
+            ++numberOfCurrentLine;
+            numberOfTokenInLine = 0;//пока еще не прочитали ни одного токена
+            return (currentLine = currentLine.trim()); //читаем по строке
         } catch (IOException e) {
             e.printStackTrace();
         }
