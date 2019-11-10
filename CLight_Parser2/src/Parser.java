@@ -577,8 +577,14 @@ public class Parser {
                     System.out.println(formatter.format("%-30s |%-20s |%-20s"
                                   ,getCurrentStackState(stack), currentLine, errorMsg));
                     tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
-                    tokenizer.addMistake("Ожидался \"" + stackTopSmbl + "\""
-                    + ", обнаружен \"" + lineFirstSymbol.value + "\"");//запоминаем ошибку
+                    //если в данный момент анализируется число или идентификатор
+                    if (stackTopSmbl.value.equals("number_end") || stackTopSmbl.value.equals("id_end")) {
+                        tokenizer.addMistake("Невозможно распознать символ");//запоминаем ошибку
+                    }
+                    else {
+                        tokenizer.addMistake("Ожидался \"" + stackTopSmbl + "\""
+                                + ", обнаружен \"" + lineFirstSymbol.value + "\"");//запоминаем ошибку
+                    }
                     //просто стираем символ (пропускаем)
                     tokenizer.popToken();
                     //line.remove(0);

@@ -82,9 +82,11 @@ public class Main extends Application {
         filler.displayMistakePlaces();
 
         primaryStage.show();
+        writePredictTableToFile();
 
     }
 
+    //печатает таблицу предиктивного анализа в html формате
     private void writePredictTableToFile() {
 
         String tableHtml = "<table border=\"1\">\n" +
@@ -110,13 +112,18 @@ public class Main extends Application {
                     "  <tr>"); //начало следующей строки
             String str = "<th scope=\"row\">" + symbol + "</th>";//вертикальный заголовок
             stringBuilder.append(str);
+            //получаем строку таблицы для данного символа
             TreeMap<Symbol, Rule> tableRow = parser.getPredictTableRow(symbol);
             for (Map.Entry<Symbol, Rule> entry : tableRow.entrySet()) {
-                str = "<td>" + entry.getValue() + "</td>";
+                if (entry.getValue() != null) {
+                    str = "<td>" + entry.getValue() + "</td>";
+                }  else {
+                    str = "<td></td>";
+                }
                 stringBuilder.append(str);
-                System.out.print(entry.getKey() + ", " + entry.getValue() + "; ");
+                //System.out.print(entry.getKey() + ", " + entry.getValue() + "; ");
             }
-            System.out.println("\n");
+            //System.out.println("\n");
 
         }
 
@@ -125,13 +132,13 @@ public class Main extends Application {
 
         tableHtml = stringBuilder.toString();
 
-        /*try {
+        try {
             FileOutputStream out = new FileOutputStream("table.html");
             out.write(tableHtml.getBytes());
             out.close();
         } catch (IOException e) {
 
-        }*/
+        }
 
         //System.out.print(tableHtml);
 
@@ -142,7 +149,7 @@ public class Main extends Application {
         int a = 0;
         int b = 0;
         int c = 0;
-        for ( int i = a ; i < c ; for () )
+        for ( int i = _a ; i < c ; )
         {
             if ( i == b )
             {

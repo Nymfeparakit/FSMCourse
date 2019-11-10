@@ -69,7 +69,7 @@ public class Tokenizer {
                     //currentLine = currentLine.substring(1);
                     return (currentToken = nextToken);
                 }
-            } //TODO проверить, что работает с идентификаторами
+            }
             ++numberOfTokenInLine;//увеличиваем номер токена в строке
             //пытаемся определить первый токен в строке
             for (TokenType type : TokenType.values()) { //последовательное применяем все типы
