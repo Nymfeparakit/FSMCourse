@@ -1,6 +1,8 @@
-  int main ( ) {
-	+ for ( int i = a ) ; i < c ; ) 
+  int main ( ) 
+{
+	for ( int i = a ; i < c ; ) 
 	{
+		qwerty
 		if ( i == b ) 
 		{
 			return 1 ; 

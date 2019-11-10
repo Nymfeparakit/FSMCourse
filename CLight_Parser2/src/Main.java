@@ -1,5 +1,6 @@
 import javafx.application.Application;
 import javafx.collections.ObservableList;
+import javafx.geometry.Insets;
 import javafx.scene.Scene;
 import javafx.scene.layout.FlowPane;
 import javafx.scene.layout.VBox;
@@ -63,13 +64,14 @@ public class Main extends Application {
         textFlMistakesPlaces.setPrefSize(600, 300);
 
         TextFlow textFlCode = new TextFlow();
-        textFlMistakesPlaces.setPrefSize(600, 300);
-        Text text = new Text("..............");
-        textFlCode.getChildren().add(text);
+        textFlCode.setPrefSize(600, 300);
+        textFlCode.setStyle("-fx-border-style: none solid solid solid; -fx-border-width: 1; -fx-border-color: black;");
+        textFlCode.setPadding(new Insets(0,0,0,50));
+        /*Text text = new Text("..............");
+        textFlCode.getChildren().add(text);*/
 
-        FlowPane root = new FlowPane();
-        root.getChildren().add(textFlCode);
-        root.getChildren().add(textFlMistakesPlaces);
+        FlowPane root = new FlowPane(textFlCode, textFlMistakesPlaces);
+        //FlowPane.setMargin(textFlCode, new Insets(0, 0, 0, 25));
 
         Scene scene = new Scene(root);
         primaryStage.setScene(scene);
@@ -138,27 +140,18 @@ public class Main extends Application {
 
     /*int func ( ) {
         int a = 0;
+        int b = 0;
         int c = 0;
-        + for ( int i = a ) ; i < c ; )
+        for ( int i = a ; i < c ; for () )
         {
             if ( i == b )
             {
                 return 1 ;
             }
         }
+        return 0;
     }*/
 
-    /*int func ( ) {
-        int a = 0;
-        int c = 0;
-        for ) int i = a ; i < c ; )
-        {
-            if ( i == b )
-            {
-                return 1 ;
-            }
-        }
-    }*/
 
 }
 

@@ -42,13 +42,26 @@ public class TextFlowFiller {
         mistakes = new ArrayList<>();
     }
 
-    public void displayLine(String fullLine) {
+    public void displayLine(String fullLine, int numberOfLine) {
 
         //делим строку на лексемы
         String[] tokens = fullLine.split("\\s+");
 
         //пишем по одной лексеме, при этом проверяем
         //какие из них принадлежат к ошибочным
+        int numberOfToken = 0;
+        for (String token : tokens) {
+            if (token.isEmpty()) continue;
+            ++numberOfToken;
+            Text text = new Text(token + " ");
+            text.setStyle(textStyle);
+            final int currentNumberOfToken = numberOfToken;
+            if (mistakes.stream().anyMatch(m -> m.row == numberOfLine && m.column == currentNumberOfToken))
+                text.setFill(Color.FIREBRICK);
+            textFlCode.getChildren().add(text);
+        }
+        Text endLine = new Text("\n");
+        textFlCode.getChildren().add(endLine);
 
     }
 
@@ -69,7 +82,7 @@ public class TextFlowFiller {
     public void displayMistakePlaces() {
 
         for (Mistake m : mistakes) {
-            String str = m.errorMsg + " " + m.row + ", " + m.column + "\n";
+            String str = m.errorMsg + " (" + m.row + ", " + m.column + ")\n";
             Text text = new Text(str);
             text.setStyle(textStyle);
             textFlMistakesPlaces.getChildren().add(text);

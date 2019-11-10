@@ -541,7 +541,7 @@ public class Parser {
             Symbol stackTopSmbl = stack.peek();//берем символ с вершины стека
             //берем первый символ из строки
             if (moveToNextToken) { //если нужно перейти к следующему токену
-                boolean moveToNextLine = tokenizer.getCurrentLine().isEmpty();
+                //boolean moveToNextLine = tokenizer.getCurrentLine().isEmpty();
                 String nextToken = tokenizer.getNextToken();
                 if (nextToken.equals("#")) {//если лексер не распознал текущий символ
                     currentLine = tokenizer.getCurrentLine();
@@ -549,15 +549,14 @@ public class Parser {
                     tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
                     continue;
                 }
-                //if (moveToNextLine) {
-                //    currentLine = tokenizer.getFullLine();
-                //} else {
-                   // currentLine = tokenizer.getCurrentLine();
-                //}
                 if (!nextToken.equals("eof")) {
                     lineFirstSymbol = new Symbol(nextToken, true);
                 } else {
-                    lineFirstSymbol = null;
+                    errorMsg = "Отсутствуют символы в строке";
+                    tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
+                    tokenizer.addMistake("Ожидался \"" + stackTopSmbl + "\"");//запоминаем ошибку
+                    //lineFirstSymbol = null;
+                    break;
                 }
                 moveToNextToken = false;
             }
@@ -569,7 +568,8 @@ public class Parser {
                 Rule rule = predictTable.get(indexes);
                 //HashSet<Rule> rules = predictTable2.get(indexes);
                 if (rule == null) { //если нет подходящего правила
-                    errorMsg = "Нет правила для [" + stackTopSmbl + ", " + lineFirstSymbol + "]";
+                    errorMsg = "Нет правила для [" + stackTopSmbl + ", " + lineFirstSymbol + "], \""
+                    + lineFirstSymbol + "\" пропускается";
                     //Печатаем шаг
                     formatter = new Formatter();
                     //System.out.println(formatter.format("%-20s %-20s %-20s"
@@ -577,7 +577,8 @@ public class Parser {
                     System.out.println(formatter.format("%-30s |%-20s |%-20s"
                                   ,getCurrentStackState(stack), currentLine, errorMsg));
                     tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
-                    tokenizer.addMistake("Ожидался \"" + stackTopSmbl + "\"");//запоминаем ошибку
+                    tokenizer.addMistake("Ожидался \"" + stackTopSmbl + "\""
+                    + ", обнаружен \"" + lineFirstSymbol.value + "\"");//запоминаем ошибку
                     //просто стираем символ (пропускаем)
                     tokenizer.popToken();
                     //line.remove(0);
@@ -625,8 +626,10 @@ public class Parser {
 
             } else { //иначе символ в стеке терминальный
                 if (!stackTopSmbl.equals(lineFirstSymbol)) { //сравниваем верхний символ стека и первый символ строки
-                    errorMsg = "Символы \"" + stackTopSmbl + "\", \"" + lineFirstSymbol + "\" не совпали";
-                    tokenizer.addMistake("Ожидался \"" + stackTopSmbl + "\"");//запоминаем ошибку
+                    errorMsg = "Символы \"" + stackTopSmbl + "\", \"" + lineFirstSymbol + "\" не совпали"
+                    + "; \"" + stackTopSmbl + "\" снимается со стека";
+                    tokenizer.addMistake("Ожидался \"" + stackTopSmbl + "\""
+                            + ", обнаружен \"" + lineFirstSymbol.value + "\"");//запоминаем ошибку
                     System.out.println(formatter.format("%-30s |%-20s |%-20s"
                             ,getCurrentStackState(stack), currentLine, errorMsg));
                     tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
@@ -651,7 +654,22 @@ public class Parser {
                 System.out.println(formatter.format("%-30s |%-20s |%-20s"
                         ,getCurrentStackState(stack), currentLine, errorMsg));
                 tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, "", tableStrBuilder);
+            } else if (!stack.isEmpty()) { //если файл закончился, но ожидалось еще что-то
+                errorMsg = "Отсутствуют символы в строке";
+                tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
+                tokenizer.addMistake("Ожидался \"" + stackTopSmbl + "\"");//запоминаем ошибку
+                //lineFirstSymbol = null;
+                break;
+            } else {
+                break;
             }
+        }
+
+        if ( currentLine != null && !currentLine.isEmpty()) { //если стек оказался пуст, но при этом в строке что-то осталось
+            lineFirstSymbol = new Symbol(tokenizer.getNextToken());
+            String errorMsg = "Лишний символ";
+            tableStrBuilder = addRowToParsingTable(getCurrentStackState(stack), currentLine, errorMsg, tableStrBuilder);
+            tokenizer.addMistake("Лишний символ \"" + lineFirstSymbol + "\"");//запоминаем ошибку
         }
 
         tableStrBuilder.append("</table>");

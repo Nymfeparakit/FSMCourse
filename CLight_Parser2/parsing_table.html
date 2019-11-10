@@ -5,27 +5,27 @@
     <th scope="col">Примечание</th>
   </tr><tr>
     <td>$ program </td>
-    <td>int main ( ) {</td>
+    <td>int main ( )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement { ) ( main type </td>
-    <td>int main ( ) {</td>
+    <td>int main ( )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement { ) ( main int </td>
-    <td>int main ( ) {</td>
+    <td>int main ( )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement { ) ( main </td>
-    <td>main ( ) {</td>
+    <td>main ( )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement { ) ( </td>
-    <td>( ) {</td>
+    <td>( )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement { ) </td>
-    <td>) {</td>
+    <td>)</td>
     <td></td>
   </tr><tr>
     <td>$ } statement { </td>
@@ -33,160 +33,132 @@
     <td></td>
   </tr><tr>
     <td>$ } statement </td>
-    <td>+ for ( int i = a ) ; i < c ; )</td>
-    <td></td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td>+ for ( int i = a ) ; i < c ; )</td>
-    <td>Невозможно распознать символ</td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td>for ( int i = a ) ; i < c ; )</td>
+    <td>for ( int i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement for </td>
-    <td>for ( int i = a ) ; i < c ; )</td>
+    <td>for ( int i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; declaration ( for </td>
-    <td>for ( int i = a ) ; i < c ; )</td>
+    <td>for ( int i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; declaration ( </td>
-    <td>( int i = a ) ; i < c ; )</td>
+    <td>( int i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; declaration </td>
-    <td>int i = a ) ; i < c ; )</td>
+    <td>int i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign identifier type </td>
-    <td>int i = a ) ; i < c ; )</td>
+    <td>int i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign identifier int </td>
-    <td>int i = a ) ; i < c ; )</td>
+    <td>int i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign identifier </td>
-    <td>i = a ) ; i < c ; )</td>
+    <td>i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign id_end character </td>
-    <td>i = a ) ; i < c ; )</td>
+    <td>i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign id_end i </td>
-    <td>i = a ) ; i < c ; )</td>
+    <td>i = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign id_end </td>
-    <td> = a ) ; i < c ; )</td>
+    <td> = a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign </td>
-    <td>= a ) ; i < c ; )</td>
+    <td>= a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign_end = </td>
-    <td>= a ) ; i < c ; )</td>
+    <td>= a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign_end </td>
-    <td>a ) ; i < c ; )</td>
+    <td>a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; identifier </td>
-    <td>a ) ; i < c ; )</td>
+    <td>a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; id_end character </td>
-    <td>a ) ; i < c ; )</td>
+    <td>a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; id_end a </td>
-    <td>a ) ; i < c ; )</td>
+    <td>a ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; id_end </td>
-    <td> ) ; i < c ; )</td>
+    <td> ; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; </td>
-    <td>) ; i < c ; )</td>
-    <td></td>
-  </tr><tr>
-    <td>$ } statement ) ; bool_expression ; </td>
-    <td>) ; i < c ; )</td>
-    <td>Символы ";", ")" не совпали</td>
-  </tr><tr>
-    <td>$ } statement ) ; bool_expression </td>
-    <td>) ; i < c ; )</td>
+    <td>; i < c ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression </td>
-    <td>) ; i < c ; )</td>
-    <td>[bool_expression, )] = Synch</td>
+    <td>i < c ; )</td>
+    <td></td>
   </tr><tr>
-    <td>$ } statement ) ; </td>
-    <td>) ; i < c ; )</td>
+    <td>$ } statement ) ; identifier relop identifier </td>
+    <td>i < c ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; identifier relop id_end character </td>
+    <td>i < c ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; identifier relop id_end i </td>
+    <td>i < c ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; identifier relop id_end </td>
+    <td> < c ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; identifier relop </td>
+    <td>< c ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; identifier < </td>
+    <td>< c ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; identifier </td>
+    <td>c ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; id_end character </td>
+    <td>c ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; id_end c </td>
+    <td>c ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; id_end </td>
+    <td> ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; </td>
-    <td>) ; i < c ; )</td>
-    <td>Символы ";", ")" не совпали</td>
+    <td>; )</td>
+    <td></td>
   </tr><tr>
     <td>$ } statement ) </td>
-    <td>) ; i < c ; )</td>
-    <td></td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td>; i < c ; )</td>
-    <td></td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td>; i < c ; )</td>
-    <td>Нет правила для [statement, ;]</td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td>i < c ; )</td>
-    <td></td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td>i < c ; )</td>
-    <td>Нет правила для [statement, i]</td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td> < c ; )</td>
-    <td></td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td> < c ; )</td>
-    <td>Нет правила для [statement, <]</td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td>c ; )</td>
-    <td></td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td>c ; )</td>
-    <td>Нет правила для [statement, c]</td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td> ; )</td>
-    <td></td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td> ; )</td>
-    <td>Нет правила для [statement, ;]</td>
-  </tr><tr>
-    <td>$ } statement </td>
     <td>)</td>
     <td></td>
-  </tr><tr>
-    <td>$ } statement </td>
-    <td>)</td>
-    <td>Нет правила для [statement, )]</td>
   </tr><tr>
     <td>$ } statement </td>
     <td>{</td>
@@ -195,6 +167,54 @@
     <td>$ } } statement { </td>
     <td>{</td>
     <td></td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>qwerty</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>qwerty</td>
+    <td>Нет правила для [statement, q], "q" пропускается</td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>werty</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>werty</td>
+    <td>Нет правила для [statement, w], "w" пропускается</td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>erty</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>erty</td>
+    <td>Нет правила для [statement, e], "e" пропускается</td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>rty</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>rty</td>
+    <td>Нет правила для [statement, r], "r" пропускается</td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>ty</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>ty</td>
+    <td>Нет правила для [statement, t], "t" пропускается</td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>y</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } } statement </td>
+    <td>y</td>
+    <td>Нет правила для [statement, y], "y" пропускается</td>
   </tr><tr>
     <td>$ } } statement </td>
     <td>if ( i == b )</td>

@@ -16,6 +16,7 @@ public class Tokenizer {
     int numberOfCurrentLine;
     int numberOfTokenInLine;
     TextFlowFiller filler;
+    boolean lineContainsMistakes;
 
     public Tokenizer(Parser parser, TextFlowFiller filler) {
         this.parser = parser;
@@ -39,6 +40,7 @@ public class Tokenizer {
 
     public void addMistake(String errorMsg) {
         filler.addMistake(errorMsg, numberOfCurrentLine, numberOfTokenInLine);
+        lineContainsMistakes = true;
     }
 
     public String getNextToken() {
@@ -46,6 +48,7 @@ public class Tokenizer {
         //try {
             if (currentLine.isEmpty()) {//если в строке больше ничего нет
                 getNextLine();
+                lineContainsMistakes = false;
                 /*
                 currentLine = reader.readLine(); //читаем по строке
                 fullLine = currentLine; //запоминаем строку целиком
@@ -104,9 +107,12 @@ public class Tokenizer {
 
     public String getNextLine() {
         try {
+            //выводим текущую линию в textFlow
+            filler.displayLine(fullLine, numberOfCurrentLine);
             currentLine = reader.readLine(); //читаем по строке
             if (currentLine == null) //если дошли до конца файла
                 return null;
+            currentTokenIsCharOrNmbr = false;//чтобы токены идентификаторов и цифр разделялись переносами строк
             fullLine = currentLine; //запоминаем строку целиком
             ++numberOfCurrentLine;
             numberOfTokenInLine = 0;//пока еще не прочитали ни одного токена
