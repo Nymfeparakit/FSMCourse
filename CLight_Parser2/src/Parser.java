@@ -23,7 +23,7 @@ public class Parser {
         terminalSymbols = new TreeSet<>();
         try {
 
-            FileInputStream fstream = new FileInputStream("grammar.txt");
+            FileInputStream fstream = new FileInputStream("new_grammar2.txt");
             BufferedReader br = new BufferedReader(new InputStreamReader(fstream));
             String line;
 
@@ -66,8 +66,21 @@ public class Parser {
                         setOfRules.add(rule);
                         continue;//идем к следующей строке
                     }
-                    String[] rulesStr = rightPart.split("\\|");
-                    for (int i = 0; i < rulesStr.length; ++i) {
+                    String[] rulesStr = new String[100];
+                    int length = 0;
+                    if (leftSymbol != null && leftSymbol.value.equals("logicop")) {
+                        rulesStr[0] = "\"&&\"";
+                        rulesStr[1] = "\"||\"";
+                        length = 2;
+                    } else {
+                        String[] rulesStr2 = rightPart.split("\\|");
+                        length = rulesStr2.length;
+                        rulesStr = rulesStr2;
+                    }
+                    //String[] rulesStr = rightPart.split("(?<!\")\\|(?!\")");
+                int a = 0;
+                    for (int i = 0; i < length; ++i) {
+                        if (rulesStr[i] == null) continue;
                         if (rulesStr[i].isEmpty())
                             continue;
                         rule = new ArrayList<>();

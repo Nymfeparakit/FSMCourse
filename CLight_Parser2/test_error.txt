@@ -1,7 +1,6 @@
   int main ( ) 
 {
-	for 
-( int i = a ; i < c ; ) 
+	for ( int i = a ; i < c and i > b or i < 4 ; ) 
 	{
 		if ( i == b ) 
 		{

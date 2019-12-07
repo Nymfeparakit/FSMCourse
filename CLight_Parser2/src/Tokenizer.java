@@ -144,12 +144,13 @@ public class Tokenizer {
 
     public enum TokenType {
 
-        KEYWORD("\\b(for|if|int|bool|void|return|main)\\b"),
+        KEYWORD("\\b(for|if|int|bool|void|return|main|and|or)\\b"),
         REL_OP("(<|>|==|!=)"),
         ASSIGN("="),//единтсвенная операция в языке - присваивание
         ID("[A-Za-z]\\w*"),//имена переменных
         NUMBER("(0|[1-9]\\d*)"),//допускаются только целые числа
-        MARK("(\\(|\\)|\\{|\\}|;)");
+        //MARK("(\\(|\\)|\\{|\\}|;)");
+        MARK("(\\(|\\)|\\{|\\}|;|&&|\\|\\|)");
 
         private String reg;
 

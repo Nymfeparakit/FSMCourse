@@ -33,123 +33,235 @@
     <td></td>
   </tr><tr>
     <td>$ } statement </td>
-    <td>for</td>
+    <td>for ( int i = a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement for </td>
-    <td>for</td>
+    <td>for ( int i = a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; declaration ( for </td>
-    <td>for</td>
+    <td>for ( int i = a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; declaration ( </td>
-    <td>( int i = a ; i < c ; )</td>
+    <td>( int i = a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; declaration </td>
-    <td>int i = a ; i < c ; )</td>
+    <td>int i = a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign identifier type </td>
-    <td>int i = a ; i < c ; )</td>
+    <td>int i = a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign identifier int </td>
-    <td>int i = a ; i < c ; )</td>
+    <td>int i = a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign identifier </td>
-    <td>i = a ; i < c ; )</td>
+    <td>i = a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign id_end character </td>
-    <td>i = a ; i < c ; )</td>
+    <td>i = a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign id_end i </td>
-    <td>i = a ; i < c ; )</td>
+    <td>i = a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign id_end </td>
-    <td> = a ; i < c ; )</td>
+    <td> = a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign </td>
-    <td>= a ; i < c ; )</td>
+    <td>= a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign_end = </td>
-    <td>= a ; i < c ; )</td>
+    <td>= a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; assign_end </td>
-    <td>a ; i < c ; )</td>
+    <td>a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; identifier </td>
-    <td>a ; i < c ; )</td>
+    <td>a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; id_end character </td>
-    <td>a ; i < c ; )</td>
+    <td>a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; id_end a </td>
-    <td>a ; i < c ; )</td>
+    <td>a ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; id_end </td>
-    <td> ; i < c ; )</td>
+    <td> ; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression ; </td>
-    <td>; i < c ; )</td>
+    <td>; i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; bool_expression </td>
-    <td>i < c ; )</td>
+    <td>i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
-    <td>$ } statement ) ; identifier relop identifier </td>
-    <td>i < c ; )</td>
+    <td>$ } statement ) ; bool_expr_end rel_expr </td>
+    <td>i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
-    <td>$ } statement ) ; identifier relop id_end character </td>
-    <td>i < c ; )</td>
+    <td>$ } statement ) ; bool_expr_end identifier relop identifier </td>
+    <td>i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
-    <td>$ } statement ) ; identifier relop id_end i </td>
-    <td>i < c ; )</td>
+    <td>$ } statement ) ; bool_expr_end identifier relop id_end character </td>
+    <td>i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
-    <td>$ } statement ) ; identifier relop id_end </td>
-    <td> < c ; )</td>
+    <td>$ } statement ) ; bool_expr_end identifier relop id_end i </td>
+    <td>i < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
-    <td>$ } statement ) ; identifier relop </td>
-    <td>< c ; )</td>
+    <td>$ } statement ) ; bool_expr_end identifier relop id_end </td>
+    <td> < c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
-    <td>$ } statement ) ; identifier < </td>
-    <td>< c ; )</td>
+    <td>$ } statement ) ; bool_expr_end identifier relop </td>
+    <td>< c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
-    <td>$ } statement ) ; identifier </td>
-    <td>c ; )</td>
+    <td>$ } statement ) ; bool_expr_end identifier < </td>
+    <td>< c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
-    <td>$ } statement ) ; id_end character </td>
-    <td>c ; )</td>
+    <td>$ } statement ) ; bool_expr_end identifier </td>
+    <td>c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
-    <td>$ } statement ) ; id_end c </td>
-    <td>c ; )</td>
+    <td>$ } statement ) ; bool_expr_end id_end character </td>
+    <td>c and i > b or i < 4 ; )</td>
     <td></td>
   </tr><tr>
-    <td>$ } statement ) ; id_end </td>
+    <td>$ } statement ) ; bool_expr_end id_end c </td>
+    <td>c and i > b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end id_end </td>
+    <td> and i > b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end </td>
+    <td>and i > b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end rel_expr and </td>
+    <td>and i > b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end rel_expr </td>
+    <td>i > b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier relop identifier </td>
+    <td>i > b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier relop id_end character </td>
+    <td>i > b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier relop id_end i </td>
+    <td>i > b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier relop id_end </td>
+    <td> > b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier relop </td>
+    <td>> b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier > </td>
+    <td>> b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier </td>
+    <td>b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end id_end character </td>
+    <td>b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end id_end b </td>
+    <td>b or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end id_end </td>
+    <td> or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end </td>
+    <td>or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end rel_expr or </td>
+    <td>or i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end rel_expr </td>
+    <td>i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier relop identifier </td>
+    <td>i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier relop id_end character </td>
+    <td>i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier relop id_end i </td>
+    <td>i < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier relop id_end </td>
+    <td> < 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier relop </td>
+    <td>< 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier < </td>
+    <td>< 4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier </td>
+    <td>4 ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier </td>
+    <td>4 ; )</td>
+    <td>Нет правила для [identifier, 4], "4" пропускается</td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier </td>
     <td> ; )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end identifier </td>
+    <td> ; )</td>
+    <td>[identifier, ;] = Synch</td>
+  </tr><tr>
+    <td>$ } statement ) ; bool_expr_end </td>
+    <td>; )</td>
     <td></td>
   </tr><tr>
     <td>$ } statement ) ; </td>
@@ -188,44 +300,52 @@
     <td>i == b )</td>
     <td></td>
   </tr><tr>
-    <td>$ } } statement ) identifier relop identifier </td>
+    <td>$ } } statement ) bool_expr_end rel_expr </td>
     <td>i == b )</td>
     <td></td>
   </tr><tr>
-    <td>$ } } statement ) identifier relop id_end character </td>
+    <td>$ } } statement ) bool_expr_end identifier relop identifier </td>
     <td>i == b )</td>
     <td></td>
   </tr><tr>
-    <td>$ } } statement ) identifier relop id_end i </td>
+    <td>$ } } statement ) bool_expr_end identifier relop id_end character </td>
     <td>i == b )</td>
     <td></td>
   </tr><tr>
-    <td>$ } } statement ) identifier relop id_end </td>
+    <td>$ } } statement ) bool_expr_end identifier relop id_end i </td>
+    <td>i == b )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } } statement ) bool_expr_end identifier relop id_end </td>
     <td> == b )</td>
     <td></td>
   </tr><tr>
-    <td>$ } } statement ) identifier relop </td>
+    <td>$ } } statement ) bool_expr_end identifier relop </td>
     <td>== b )</td>
     <td></td>
   </tr><tr>
-    <td>$ } } statement ) identifier == </td>
+    <td>$ } } statement ) bool_expr_end identifier == </td>
     <td>== b )</td>
     <td></td>
   </tr><tr>
-    <td>$ } } statement ) identifier </td>
+    <td>$ } } statement ) bool_expr_end identifier </td>
     <td>b )</td>
     <td></td>
   </tr><tr>
-    <td>$ } } statement ) id_end character </td>
+    <td>$ } } statement ) bool_expr_end id_end character </td>
     <td>b )</td>
     <td></td>
   </tr><tr>
-    <td>$ } } statement ) id_end b </td>
+    <td>$ } } statement ) bool_expr_end id_end b </td>
     <td>b )</td>
     <td></td>
   </tr><tr>
-    <td>$ } } statement ) id_end </td>
+    <td>$ } } statement ) bool_expr_end id_end </td>
     <td> )</td>
+    <td></td>
+  </tr><tr>
+    <td>$ } } statement ) bool_expr_end </td>
+    <td>)</td>
     <td></td>
   </tr><tr>
     <td>$ } } statement ) </td>
