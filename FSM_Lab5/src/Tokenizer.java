@@ -16,6 +16,7 @@ public class Tokenizer {
     public char currentSmbl;
 
     public Tokenizer() {
+        strNum = 0;
         smblPos = 0;
     }
 
@@ -31,6 +32,10 @@ public class Tokenizer {
                 if (currentLine.isEmpty()) continue; //пропускаем пустые строки
                 text.add(currentLine);
             }
+
+            //берем первый символ
+            currentLine = text.get(0);
+            currentSmbl = currentLine.charAt(0);
 
         } catch (IOException e) {
             e.printStackTrace();
@@ -50,6 +55,33 @@ public class Tokenizer {
             moveToNextSymbol();
         }
         return value;
+    }
+
+    private Token id() {
+
+        String result = "";
+        int currStrNum = strNum;//id располагается только в одной строке
+
+        while(currentSmbl != '$' && Character.isLetter(currentSmbl) && currStrNum == strNum) {
+            result += currentSmbl;
+            moveToNextSymbol();
+        }
+
+        Token token = getReservedWordToken(result);
+        if (token == null) { //если ключевое слово не было распознано
+            token = new Token(Token.TokenType.ID, result); //значит это идентификатор
+        }
+
+        return token;
+
+    }
+
+    private Token getReservedWordToken(String value) {
+
+        //проверяем на ключевые слова
+
+        return null; //если не совпало ни с одним словом
+
     }
 
     public Token getNextToken() {
@@ -85,11 +117,46 @@ public class Tokenizer {
                 return new Token(Token.TokenType.DIV, "/");
             }
 
+            if (currentSmbl == '(') {
+                moveToNextSymbol();
+                return new Token(Token.TokenType.LEFT_PAR, "(");
+            }
+
+            if (currentSmbl == ')') {
+                moveToNextSymbol();
+                return new Token(Token.TokenType.RIGHT_PAR, ")");
+            }
+
+            if (Character.isLetter(currentSmbl)) {
+                return id();
+            }
+
+            if (currentSmbl == '=' && peek() != '=') {
+                moveToNextSymbol();
+                return new Token(Token.TokenType.ASSIGN, "=");
+            }
+
+            error();
+
         }
 
-        error();
         return new Token(Token.TokenType.EOF, "$");
 
+    }
+
+    private char peek() {
+        char ch;
+        int peekPos = smblPos + 1;
+        int peekNumStr = strNum;
+        if (peekPos == text.get(strNum).length()) { //если вышли за пределы строки
+            if (strNum == text.size() - 1) { //если это последняя строка
+                return '$';
+            }
+            ++peekNumStr;
+            peekPos = 0;
+        }
+        ch = text.get(peekNumStr).charAt(peekPos);
+        return ch;
     }
 
     private void error() {
@@ -101,11 +168,12 @@ public class Tokenizer {
         String currLine = text.get(strNum);
         ++smblPos; //переходим к след символу
         if (smblPos < currLine.length()) { //если еще не вышли за пределы строки
-            if (strNum == text.size() - 1) { //если это последняя строка
-                currentSmbl = '$';
-            }
             currentSmbl = currLine.charAt(smblPos);
         } else {
+            if (strNum == text.size() - 1) { //если это последняя строка
+                currentSmbl = '$';
+                return;
+            }
             ++strNum; //переходим к следующей строке
             currLine = text.get(strNum);
             smblPos = 0;

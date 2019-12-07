@@ -1,68 +1,47 @@
+
+
 public class Interpreter {
 
-    Tokenizer tokenizer;
-    Token currToken;
+    Parser parser;
 
-    public Interpreter(Tokenizer tokenizer) {
-        this.tokenizer = tokenizer;
-        currToken = tokenizer.getNextToken();
+
+
+    public Interpreter(Parser parser) {
+        this.parser = parser;
     }
 
-    private void eatToken(Token.TokenType expType) {
-        if (currToken.type == expType)
-            currToken = tokenizer.getNextToken();
-        else  //если не получили ожидаемый тип токена
-            error();
-    }
+    //здесь описывается алгоритм обхода дерева
+    public int visit(ASTNode node) {
 
-    private int factor() {
-        Token token = currToken;
-        eatToken(Token.TokenType.NUMBER);
-        return Integer.parseInt(token.value);
-    }
-
-    private int term() {
-
-        int result = factor();// получаем первый фактор
-
-        while (currToken.type == Token.TokenType.MUL || currToken.type == Token.TokenType.DIV) {
-            Token tmp = currToken;
-            if (tmp.type == Token.TokenType.MUL) {
-                eatToken(Token.TokenType.MUL);
-                result = result * factor();
-            } else if (tmp.type == Token.TokenType.DIV) {
-                eatToken(Token.TokenType.DIV);
-                result = result / factor();
-            }
+        if (node instanceof OpNode) {
+            return visitOp((OpNode)node); //двигаемся дальше вниз по дереву
+        } else if (node instanceof NumNode) {
+            return ((NumNode) node).value; //возвращаем значение листа дерева
         }
 
-        return result;
+        return 0;
 
     }
 
-    public int expr() {
+    private int visitOp(OpNode node) {
 
-        int result = term();
-
-        while (currToken.type == Token.TokenType.PLUS || currToken.type == Token.TokenType.MINUS) {
-            Token tmp = currToken;
-            if (tmp.type == Token.TokenType.PLUS) {
-                eatToken(Token.TokenType.PLUS);
-                result = result + term();
-            } else if (tmp.type == Token.TokenType.MINUS) {
-                eatToken(Token.TokenType.MINUS);
-                result = result - term();
-            }
+        if (node.token.type == Token.TokenType.PLUS) {
+            return visit(node.left) + visit(node.right);
+        } else if (node.token.type == Token.TokenType.MINUS) {
+            return visit(node.left) - visit(node.right);
+        } else if (node.token.type == Token.TokenType.MUL) {
+            return visit(node.left) * visit(node.right);
+        } else if (node.token.type == Token.TokenType.DIV) {
+            return visit(node.left) / visit(node.right);
         }
 
-        return result;
+        return 0;
 
     }
 
-    private void error() {
-
+    public int interpret() {
+        ASTNode root = parser.parse();
+        return visit(root);
     }
-
-
 
 }

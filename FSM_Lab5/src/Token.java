@@ -21,7 +21,9 @@ public class Token {
         DIV("/"),
         PLUS("+"),
         MINUS("-"),
-        EOF("$");
+        EOF("$"),
+        LEFT_PAR("("),
+        RIGHT_PAR(")");
 
         private String reg;
 
