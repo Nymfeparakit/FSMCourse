@@ -5,12 +5,11 @@ public class Main {
         Tokenizer tokenizer = new Tokenizer();
         tokenizer.openFileToRead("test.txt");
         Parser parser = new Parser(tokenizer);
-        ASTNode root = parser.parse();
+        //ASTNode root = parser.parse();
         int a = 0;
-        //Interpreter interpreter = new Interpreter(parser);
-        //int result = interpreter.interpret();
-        //System.out.println(result);
-
+        Interpreter interpreter = new Interpreter(parser);
+        interpreter.interpret();
+        //interpreter.printGlobalScope();
     }
 
 }

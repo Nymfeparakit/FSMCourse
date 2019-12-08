@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+
 public class Parser {
 
     Tokenizer tokenizer;
@@ -47,7 +49,7 @@ public class Parser {
                 eatToken(Token.TokenType.DIV);
             }
             ASTNode right = factor();
-            node = new OpNode(node, right, tmp);
+            node = new ExprNode(node, right, tmp);
         }
 
         return node;
@@ -66,7 +68,7 @@ public class Parser {
                 eatToken(Token.TokenType.MINUS);
             }
             ASTNode right = term();
-            node = new OpNode(node, right, tmp);
+            node = new ExprNode(node, right, tmp);
         }
 
         return node;
@@ -75,18 +77,100 @@ public class Parser {
 
     private ASTNode statement() {
 
-        ASTNode leftNode = null;
-        ASTNode rightNode = null;
+        ASTNode currNode = null;
+        ArrayList<ASTNode> stmntChildren = new ArrayList<>();
+        do {
+            currNode = null;
+            if (currToken.type == Token.TokenType.ID) {
+                currNode = assign();
+                stmntChildren.add(currNode);
+            } else if (currToken.type == Token.TokenType.IF){ //  | <if>  ‘{ <statement> ‘}’ <else>
+                currNode = ifStatement();
+                eatToken(Token.TokenType.LEFT_BRACE);
+                ASTNode thenNode = statement();
+                eatToken(Token.TokenType.RIGHT_BRACE);
+                ASTNode elseNode = elseStatement();
+                stmntChildren.add(currNode);
+                stmntChildren.add(thenNode);
+                stmntChildren.add(elseNode); //else node всегда есть, но он может быть null
+            } else if (currToken.type == Token.TokenType.FOR) {
+                currNode = forStatement();
+                eatToken(Token.TokenType.LEFT_BRACE);
+                ASTNode body = statement();
+                eatToken(Token.TokenType.RIGHT_BRACE);
+                stmntChildren.add(currNode);
+                stmntChildren.add(body);
+            } else if (currToken.type == Token.TokenType.PRINT) {
+                currNode = printStatement();
+                stmntChildren.add(currNode);
+            }
+        } while (currNode != null);
 
-        if (currToken.type == Token.TokenType.ID) {
-            leftNode = assign();
+        return new StatementNode(stmntChildren);
+
+    }
+
+    private ASTNode printStatement() {
+
+        eatToken(Token.TokenType.PRINT);
+        ArrayList<ASTNode> childrenToPrint = new ArrayList<>();
+        boolean firsIter = true;
+        do {
+            if (!firsIter) eatToken(Token.TokenType.COMMA); //аргументы print отделяются запятой
+            ASTNode child = null;
+            Token token = currToken;
+            //это должна быть строка или выражение
+            if (currToken.type == Token.TokenType.STRING) {
+                eatToken(Token.TokenType.STRING);
+                child = new StringNode(token);
+            } else {
+                child = expr();
+            }
+            childrenToPrint.add(child);
+            firsIter = false;
+        } while (currToken.type != Token.TokenType.SEMICOLON && currToken.type != Token.TokenType.EOF);
+        eatToken(Token.TokenType.SEMICOLON);
+
+        return new PrintNode(childrenToPrint);
+
+    }
+
+    private ASTNode forStatement() {
+
+        //<for>: ‘for’ <identifier> ‘=’ <expression> ‘to’ <expression>
+        eatToken(Token.TokenType.FOR);
+        ASTNode idNode = identifier();
+        eatToken(Token.TokenType.ASSIGN);
+        ASTNode exprFrom = expr();
+        eatToken(Token.TokenType.TO);
+        ASTNode exprTo = expr();
+        return new ForNode(idNode, exprFrom, exprTo);
+
+    }
+
+    private ASTNode ifStatement() {
+
+        //<if>: ‘if’ <bool_expression>
+        eatToken(Token.TokenType.IF);
+        ASTNode boolExprNode = boolExpr();
+        return new IfNode(boolExprNode);
+
+    }
+
+    private ASTNode elseStatement() {
+
+        //<else>:
+        //| ‘else’ ‘{‘ <statement> ‘}’
+
+        if (currToken.type == Token.TokenType.ELSE) {
+            eatToken(Token.TokenType.ELSE);
+            eatToken(Token.TokenType.LEFT_BRACE);
+            ASTNode statementNode = statement();
+            eatToken(Token.TokenType.RIGHT_BRACE);
+            return new ElseNode(statementNode);
         } else {
             return null;
         }
-        rightNode = statement();
-
-        return new StatementNode(leftNode, rightNode);
-
     }
 
     private ASTNode assign() {
@@ -97,6 +181,25 @@ public class Parser {
         eatToken(Token.TokenType.ASSIGN);
         ASTNode right = expr(); //справа ожидается выражение
         return new AssignNode(left, right, token);
+
+    }
+
+    private ASTNode boolExpr() {
+
+        ASTNode leftNode = expr();
+        Token tmp = currToken;
+        if (tmp.type == Token.TokenType.GREATER) {
+            eatToken(Token.TokenType.GREATER);
+        } else if (tmp.type == Token.TokenType.LESS) {
+            eatToken(Token.TokenType.LESS);
+        } else if (tmp.type == Token.TokenType.EQUAL) {
+            eatToken(Token.TokenType.EQUAL);
+        } else if (tmp.type == Token.TokenType.NOT_EQUAL) {
+            eatToken(Token.TokenType.NOT_EQUAL);
+        }
+        ASTNode rightNode = expr();
+
+        return new LogicOpNode(leftNode, rightNode, tmp);
 
     }
 

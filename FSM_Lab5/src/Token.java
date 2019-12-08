@@ -8,10 +8,13 @@ public class Token {
         this.value = value;
     }
 
+    public String toString() {
+        return value;
+    }
+
     public enum TokenType {
 
         KEYWORD("\\b(for|if|int|bool|void|return|main|and|or)\\b"),
-        REL_OP("(<|>|==|!=)"),
         ASSIGN("="),//единтсвенная операция в языке - присваивание
         ID("[A-Za-z]\\w*"),//имена переменных
         NUMBER("(0|[1-9]\\d*)"),//допускаются только целые числа
@@ -23,7 +26,23 @@ public class Token {
         MINUS("-"),
         EOF("$"),
         LEFT_PAR("("),
-        RIGHT_PAR(")");
+        RIGHT_PAR(")"),
+        IF("if"),
+        ELSE("else"),
+        GREATER(">"),
+        GREATER_EQ(">="),
+        LESS("<"),
+        LESS_EQ("<="),
+        EQUAL("=="),
+        NOT_EQUAL("!="),
+        LEFT_BRACE("{"),
+        RIGHT_BRACE("}"),
+        FOR("for"),
+        TO("to"),
+        STRING(""),
+        PRINT("print"),
+        SEMICOLON(";"),
+        COMMA(",");
 
         private String reg;
 

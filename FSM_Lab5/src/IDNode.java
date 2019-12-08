@@ -1,7 +1,7 @@
 public class IDNode extends ASTNode {
 
     Token token;
-    String value;
+    String value; //имя идентификатора
 
     public IDNode(Token token) {
         this.token = token;

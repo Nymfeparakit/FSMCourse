@@ -76,9 +76,36 @@ public class Tokenizer {
 
     }
 
+    private Token string() {
+
+        String result = "";
+        int currStrNum = strNum;//string располагается только в одной строке
+
+        moveToNextSymbol(); //пропускаем "
+        while(currentSmbl != '$' && currentSmbl != '\"' && currStrNum == strNum) {
+            result += currentSmbl;
+            moveToNextSymbol();
+        }
+
+        moveToNextSymbol();//пропускаем "
+
+        return new Token(Token.TokenType.STRING, result);
+
+    }
+
     private Token getReservedWordToken(String value) {
 
-        //проверяем на ключевые слова
+        if (value.equals("if")) { //проверяем на ключевые слова
+            return new Token(Token.TokenType.IF, "if");
+        } else if (value.equals("else")) {
+            return new Token(Token.TokenType.ELSE, "else");
+        } else if (value.equals("for")) {
+            return new Token(Token.TokenType.FOR, "for");
+        } else if (value.equals("to")) {
+            return new Token(Token.TokenType.TO, "to");
+        } else if (value.equals("print")) {
+            return new Token(Token.TokenType.PRINT, "print");
+        }
 
         return null; //если не совпало ни с одним словом
 
@@ -134,6 +161,50 @@ public class Tokenizer {
             if (currentSmbl == '=' && peek() != '=') {
                 moveToNextSymbol();
                 return new Token(Token.TokenType.ASSIGN, "=");
+            }
+
+            if (currentSmbl == '<') {
+                moveToNextSymbol();
+                return new Token(Token.TokenType.LESS, "<");
+            }
+
+            if (currentSmbl == '>') {
+                moveToNextSymbol();
+                return new Token(Token.TokenType.GREATER, ">");
+            }
+
+            if (currentSmbl == '=' && peek() == '=') {
+                moveToNextSymbol();
+                return new Token(Token.TokenType.EQUAL, "==");
+            }
+
+            if (currentSmbl == '!' && peek() == '=') {
+                moveToNextSymbol();
+                return new Token(Token.TokenType.NOT_EQUAL, "!=");
+            }
+
+            if (currentSmbl == '{') {
+                moveToNextSymbol();
+                return new Token(Token.TokenType.LEFT_BRACE, "{");
+            }
+
+            if (currentSmbl == '}') {
+                moveToNextSymbol();
+                return new Token(Token.TokenType.RIGHT_BRACE, "}");
+            }
+
+            if (currentSmbl == '\"') {
+                return string();
+            }
+
+            if (currentSmbl == ';') {
+                moveToNextSymbol();
+                return new Token(Token.TokenType.SEMICOLON, ";");
+            }
+
+            if (currentSmbl == ',') {
+                moveToNextSymbol();
+                return new Token(Token.TokenType.COMMA, ",");
             }
 
             error();
