@@ -105,6 +105,8 @@ public class Tokenizer {
             return new Token(Token.TokenType.TO, "to");
         } else if (value.equals("print")) {
             return new Token(Token.TokenType.PRINT, "print");
+        } else if (value.equals("scan")) {
+            return new Token(Token.TokenType.SCAN, "scan");
         }
 
         return null; //если не совпало ни с одним словом
@@ -175,11 +177,13 @@ public class Tokenizer {
 
             if (currentSmbl == '=' && peek() == '=') {
                 moveToNextSymbol();
+                moveToNextSymbol(); //пропускаем ==
                 return new Token(Token.TokenType.EQUAL, "==");
             }
 
             if (currentSmbl == '!' && peek() == '=') {
-                moveToNextSymbol();
+                moveToNextSymbol(); //пропускаем !
+                moveToNextSymbol(); //пропускаем =
                 return new Token(Token.TokenType.NOT_EQUAL, "!=");
             }
 

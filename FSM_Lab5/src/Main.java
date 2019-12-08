@@ -3,7 +3,7 @@ public class Main {
     public static void main(String[] args) {
 
         Tokenizer tokenizer = new Tokenizer();
-        tokenizer.openFileToRead("test.txt");
+        tokenizer.openFileToRead("test2.txt");
         Parser parser = new Parser(tokenizer);
         //ASTNode root = parser.parse();
         int a = 0;

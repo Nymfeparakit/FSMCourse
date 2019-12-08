@@ -103,10 +103,23 @@ public class Parser {
             } else if (currToken.type == Token.TokenType.PRINT) {
                 currNode = printStatement();
                 stmntChildren.add(currNode);
+            } else if (currToken.type == Token.TokenType.SCAN) {
+                currNode = scanStatement();
+                stmntChildren.add(currNode);
             }
         } while (currNode != null);
 
         return new StatementNode(stmntChildren);
+
+    }
+
+    private ASTNode scanStatement() {
+
+        //<scan>: ‘scan’ <identifier> ‘;’
+        eatToken(Token.TokenType.SCAN);
+        ASTNode idNode = identifier();
+        eatToken(Token.TokenType.SEMICOLON);
+        return new ScanNode(idNode);
 
     }
 

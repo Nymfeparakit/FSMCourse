@@ -1,5 +1,6 @@
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Scanner;
 
 public class Interpreter {
 
@@ -29,6 +30,10 @@ public class Interpreter {
             return visitLogicOp((LogicOpNode) node);
         } else if (node instanceof PrintNode) {
             visitPrintStmt((PrintNode) node);
+        } else if (node instanceof ScanNode) {
+            visitScanStmt((ScanNode)node);
+        } else if (node instanceof StringNode) {
+            return visitStringNode((StringNode)node);
         }
 
         return null;
@@ -51,22 +56,31 @@ public class Interpreter {
 
     }
 
+    private void visitScanStmt(ScanNode node) {
+
+        //ожидаем ввода значения переменной
+        Scanner scanner = new Scanner(System.in);
+        Integer value = scanner.nextInt();
+
+        //TODO обрабатывать, если это не число
+        //Получаем имя переменной
+        String name = ((IDNode)node.idNode).value;
+        globalScope.put(name, value);//запоминаем в таблицу переменных
+
+    }
+
     private void visitPrintStmt(PrintNode node) {
 
         for (ASTNode child : node.nodesToPrint) {
-            if (child instanceof StringNode) {
-                System.out.print(((StringNode) child).value);
-            } else if (child instanceof IDNode) { //если это переменная
-                String varName = ((IDNode) child).value;
-               //TODO  неопределенное значение переменной
-                Integer varValue = globalScope.get(varName); //получаем ее значение
-                System.out.print(varValue);
-            } else if (child instanceof NumNode) { //если это число
-                Integer value = ((NumNode) child).value;
-                System.out.print(value);
-            }
+            //TODO неопределенное значение переменной
+            System.out.print(visit(child));
         }
+        System.out.println(); //для перехода на следующую строку
 
+    }
+
+    private String visitStringNode(StringNode node) {
+        return node.value;
     }
 
     private Boolean visitLogicOp(LogicOpNode node) {
@@ -134,9 +148,14 @@ public class Interpreter {
 
         Integer valueFrom = (Integer)visit(forNode.exprFrom);
         Integer valueTo = (Integer)visit(forNode.exprTo);
+        ASTNode counter = forNode.identifier;//переменная счетчик
+        //запоминаем новую переменную, она тоже становится глобальной
+        globalScope.put(((IDNode)counter).value, valueFrom);
 
-        for (int i = valueFrom; i < valueTo; ++i) {
-            visit(bodyNode);
+        Integer currValue = valueFrom;
+        while (currValue < valueTo) {
+            visit(bodyNode); //выполняем тело цикла
+            globalScope.put(((IDNode)counter).value, ++currValue);//увеличиваем счетчик
         }
 
     }

@@ -42,7 +42,8 @@ public class Token {
         STRING(""),
         PRINT("print"),
         SEMICOLON(";"),
-        COMMA(",");
+        COMMA(","),
+        SCAN("scan");
 
         private String reg;
 
