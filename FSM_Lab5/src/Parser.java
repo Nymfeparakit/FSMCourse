@@ -15,9 +15,9 @@ public class Parser {
     }
 
     private ParseError error(Token.TokenType expType, Token.TokenType actualType) {
-        System.out.println("Error at line " + tokenizer.strNum +
-                ", expected " + expType.getReg() +
-                ", but was " + actualType.getReg());
+        System.out.println("Error at line " + (tokenizer.strNum + 1) +
+                ", expected \"" + expType.getReg() +
+                "\", but was \"" + actualType.getReg() + "\"");
         parsingSuccess = false;
         return new ParseError();
     }
@@ -133,7 +133,7 @@ public class Parser {
                     break;
                 } else if (currToken.type != Token.TokenType.RIGHT_BRACE){
                     throw error("Error at line " + tokenizer.strNum +
-                            ", expected beginning of statement, but was " + currToken.type.getReg());
+                            ", expected beginning of statement, but was \"" + currToken.type.getReg() + "\"");
                 }
             } catch (ParseError e) {
                 synchronize();

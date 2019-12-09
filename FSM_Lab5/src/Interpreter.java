@@ -178,11 +178,13 @@ public class Interpreter {
     private Integer visitIdentifier(IDNode node) {
         String varName = node.value; //получаем имя переменной
         Integer value = globalScope.get(varName);
-        if (value == null)
-            error();
+        if (value == null) {
+            globalScope.put(varName, 0);
+            return 0;
+        }
         else
             return value;
-        return null;
+        //return null;
     }
 
     private void error() {}

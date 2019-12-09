@@ -24,7 +24,7 @@ public class Token {
         DIV("/"),
         PLUS("+"),
         MINUS("-"),
-        EOF("$"),
+        EOF("EOF"),
         LEFT_PAR("("),
         RIGHT_PAR(")"),
         IF("if"),
