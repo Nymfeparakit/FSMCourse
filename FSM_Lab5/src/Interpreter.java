@@ -1,4 +1,5 @@
 import java.util.HashMap;
+import java.util.InputMismatchException;
 import java.util.Map;
 import java.util.Scanner;
 
@@ -60,9 +61,17 @@ public class Interpreter {
 
         //ожидаем ввода значения переменной
         Scanner scanner = new Scanner(System.in);
-        Integer value = scanner.nextInt();
-
-        //TODO обрабатывать, если это не число
+        boolean inputSuccess = false;
+        Integer value = null;
+        while (!inputSuccess) {
+            try {
+                value = scanner.nextInt();
+                inputSuccess = true;
+            } catch (InputMismatchException e) {
+                System.out.println("Введите целое число");
+                scanner.nextLine();
+            }
+        }
         //Получаем имя переменной
         String name = ((IDNode)node.idNode).value;
         globalScope.put(name, value);//запоминаем в таблицу переменных
@@ -180,7 +189,8 @@ public class Interpreter {
 
     public void interpret() {
         ASTNode root = parser.parse();
-        visit(root);
+        if (root != null)
+            visit(root);
     }
 
     public void printGlobalScope() {

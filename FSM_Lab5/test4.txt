@@ -1,0 +1,10 @@
+for i = 1 to 4
+{
+for j = 1 to 3
+{
+if i*j > 2
+{
+print i*j;
+}
+}
+}

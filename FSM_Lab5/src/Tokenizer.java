@@ -211,7 +211,9 @@ public class Tokenizer {
                 return new Token(Token.TokenType.COMMA, ",");
             }
 
-            error();
+            System.out.println("Unexpected character \"" + currentSmbl + "\" at line " + strNum);
+            moveToNextSymbol();
+            return null;
 
         }
 
