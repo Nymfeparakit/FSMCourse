@@ -10,11 +10,8 @@ for i = 1 to 10 {
 print "new for"; 
 for i = 1 to 4
 {
-	for j = 4 to 1
+	for j = 1 to 4
 	{
-		if i*j == 2 {
-			print i*j;
-		}
-		else { print 0; }
+		print i*j;
 	}
 }

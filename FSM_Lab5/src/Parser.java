@@ -58,25 +58,6 @@ public class Parser {
         return node;
     }
 
-    private ASTNode term() {
-
-        ASTNode node = factor();// получаем первый фактор
-
-        while (currToken.type == Token.TokenType.MUL || currToken.type == Token.TokenType.DIV) {
-            Token tmp = currToken;
-            if (tmp.type == Token.TokenType.MUL) {
-                eatToken(Token.TokenType.MUL);
-            } else if (tmp.type == Token.TokenType.DIV) {
-                eatToken(Token.TokenType.DIV);
-            }
-            ASTNode right = factor();
-            node = new ExprNode(node, right, tmp);
-        }
-
-        return node;
-
-    }
-
     public ASTNode expr() {
 
         ASTNode node = term();
@@ -215,11 +196,31 @@ public class Parser {
 
     }
 
+    private ASTNode term() {
+
+        ASTNode node = factor();// получаем первый фактор
+
+        while (currToken.type == Token.TokenType.MUL || currToken.type == Token.TokenType.DIV) {
+            Token tmp = currToken;
+            if (tmp.type == Token.TokenType.MUL) {
+                eatToken(Token.TokenType.MUL);
+            } else if (tmp.type == Token.TokenType.DIV) {
+                eatToken(Token.TokenType.DIV);
+            }
+            ASTNode right = factor();
+            node = new ExprNode(node, right, tmp);
+        }
+
+        return node;
+
+    }
+
     private ASTNode ifStatement() {
 
       //  try {
             //<if>: ‘if’ <bool_expression>
             eatToken(Token.TokenType.IF);
+            //ASTNode boolExprNode = boolOp();
             ASTNode boolExprNode = boolExpr();
             return new IfNode(boolExprNode);
       /*  } catch (ParseError e) {
@@ -227,6 +228,55 @@ public class Parser {
             return null;
         } */
 
+
+    }
+
+    private ASTNode boolExpr() {
+
+        ASTNode leftNode = boolTerm();
+        ASTNode exprNode = null;
+        while (currToken.type == Token.TokenType.OR) {
+            Token tmp = currToken;
+            eatToken(Token.TokenType.OR);
+            ASTNode right = boolTerm();
+            exprNode = new LogicExprNode(leftNode, right, tmp);
+            return exprNode;
+        }
+        return leftNode;
+
+    }
+
+    private ASTNode boolTerm() {
+
+        ASTNode leftNode = boolOp();
+        ASTNode exprNode = null;
+        while (currToken.type == Token.TokenType.AND) {
+            Token tmp = currToken;
+            eatToken(Token.TokenType.AND);
+            ASTNode right = boolOp();
+            exprNode = new LogicExprNode(leftNode, right, tmp);
+            return exprNode;
+        }
+        return leftNode;
+
+    }
+
+    private ASTNode boolOp() {
+
+        ASTNode leftNode = expr();
+        Token tmp = currToken;
+        if (tmp.type == Token.TokenType.GREATER) {
+            eatToken(Token.TokenType.GREATER);
+        } else if (tmp.type == Token.TokenType.LESS) {
+            eatToken(Token.TokenType.LESS);
+        } else if (tmp.type == Token.TokenType.EQUAL) {
+            eatToken(Token.TokenType.EQUAL);
+        } else if (tmp.type == Token.TokenType.NOT_EQUAL) {
+            eatToken(Token.TokenType.NOT_EQUAL);
+        }
+        ASTNode rightNode = expr();
+
+        return new LogicOpNode(leftNode, rightNode, tmp);
 
     }
 
@@ -296,25 +346,6 @@ public class Parser {
 
     private boolean isAtEnd() {
         return currToken.type == Token.TokenType.EOF;
-    }
-
-    private ASTNode boolExpr() {
-
-        ASTNode leftNode = expr();
-        Token tmp = currToken;
-        if (tmp.type == Token.TokenType.GREATER) {
-            eatToken(Token.TokenType.GREATER);
-        } else if (tmp.type == Token.TokenType.LESS) {
-            eatToken(Token.TokenType.LESS);
-        } else if (tmp.type == Token.TokenType.EQUAL) {
-            eatToken(Token.TokenType.EQUAL);
-        } else if (tmp.type == Token.TokenType.NOT_EQUAL) {
-            eatToken(Token.TokenType.NOT_EQUAL);
-        }
-        ASTNode rightNode = expr();
-
-        return new LogicOpNode(leftNode, rightNode, tmp);
-
     }
 
     private ASTNode identifier() {

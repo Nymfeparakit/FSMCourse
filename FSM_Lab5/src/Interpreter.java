@@ -35,6 +35,8 @@ public class Interpreter {
             visitScanStmt((ScanNode)node);
         } else if (node instanceof StringNode) {
             return visitStringNode((StringNode)node);
+        } else if (node instanceof LogicExprNode) {
+            return visitLogicExpr((LogicExprNode) node);
         }
 
         return null;
@@ -92,6 +94,18 @@ public class Interpreter {
         return node.value;
     }
 
+    private Boolean visitLogicExpr(LogicExprNode node) {
+
+        if (node.token.type == Token.TokenType.OR) {
+            return (Boolean) visit(node.left) || (Boolean) visit(node.right);
+        } else if (node.token.type == Token.TokenType.AND) {
+            return (Boolean) visit(node.left) && (Boolean) visit(node.right);
+        }
+
+        return null;
+
+    }
+
     private Boolean visitLogicOp(LogicOpNode node) {
 
         if (node.token.type == Token.TokenType.GREATER) {
@@ -142,7 +156,7 @@ public class Interpreter {
 
     private void visitIfStatement(IfNode ifNode, StatementNode thenNode, ElseNode elseNode) {
 
-        LogicOpNode logicOpNode = (LogicOpNode) ifNode.boolExprNode; //получаем выражение внутри if
+        ASTNode logicOpNode = ifNode.boolExprNode;
         if ((Boolean) visit(logicOpNode)) { //если оно true
             visit(thenNode); //посещаем ветвь then
         } else {

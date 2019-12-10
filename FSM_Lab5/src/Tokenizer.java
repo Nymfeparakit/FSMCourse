@@ -211,6 +211,18 @@ public class Tokenizer {
                 return new Token(Token.TokenType.COMMA, ",");
             }
 
+            if (currentSmbl == '|' && peek() == '|') {
+                moveToNextSymbol();
+                moveToNextSymbol();
+                return new Token(Token.TokenType.OR, "||");
+            }
+
+            if (currentSmbl == '&' && peek() == '&') {
+                moveToNextSymbol();
+                moveToNextSymbol();
+                return new Token(Token.TokenType.AND, "&&");
+            }
+
             System.out.println("Unexpected character \"" + currentSmbl + "\" at line " + (strNum + 1));
             moveToNextSymbol();
             return null;

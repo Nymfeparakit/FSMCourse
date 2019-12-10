@@ -1,2 +1,20 @@
-a = 10 + ((2 * 3)
-print a;
+for i = 1 to 4
+{
+	scan a;
+	if a > 0 && a < 4 || a < 0
+	{
+		print "yes";
+	} else 
+	{
+		print "no";
+	}
+}
+
+scan b;
+if b == 3 || b == 8
+{
+	print "yes b";
+} else 
+{
+	print "no b";
+}

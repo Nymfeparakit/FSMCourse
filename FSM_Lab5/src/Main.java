@@ -5,7 +5,7 @@ public class Main {
     public static void main(String[] args) {
 
         Tokenizer tokenizer = new Tokenizer();
-        tokenizer.openFileToRead("test2.txt");
+        tokenizer.openFileToRead("test3.txt");
         Parser parser = new Parser(tokenizer);
         //ASTNode root = parser.parse();
         int a = 0;
